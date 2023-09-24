@@ -1,0 +1,4 @@
+NAME=dns
+
+make
+./$NAME
