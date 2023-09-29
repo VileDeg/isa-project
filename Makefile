@@ -1,5 +1,6 @@
 CC=gcc
-CFLAGS=-Wall -std=c99 -g
+DBGFLAGS=-g -DDEBUG
+CFLAGS=-Wall -std=c99 $(DBGFLAGS)
 
 COMPILE=$(CC) -o $@ $< $(CFLAGS)
 NAME=dns

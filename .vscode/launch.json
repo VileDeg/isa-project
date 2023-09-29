@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/dns",
-            "args": ["-r", "-s", "kazi.fit.vutbr.cz"],
+            "args": ["-r", "-s", "8.8.8.8", "www.example.com"], //"kazi.fit.vutbr.cz"
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
@@ -27,7 +27,8 @@
                     "text": "-gdb-set disassembly-flavor intel",
                     "ignoreFailures": true
                 }
-            ]
+            ],
+            "preLaunchTask": "build"
         }
 
     ]

@@ -180,7 +180,7 @@ void ngethostbyname(unsigned char *host , int query_type)
     printf("\n %d Answers.",ntohs(dns->ans_count));
     printf("\n %d Authoritative Servers.",ntohs(dns->auth_count));
     printf("\n %d Additional records.\n\n",ntohs(dns->add_count));
- 
+    
     //Start reading answers
     stop=0;
  
