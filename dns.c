@@ -587,8 +587,8 @@ int main(int argc, char* argv[])
         printf("  ");
         printf("%s., ", answers[i].name);
 
-        char* type[6];
-        memset(type, 6, '\0');
+        char type[6];
+        memset(type, 0, 6);
 
         switch (ntohs(answers[i].resource->type))
         {
@@ -609,13 +609,17 @@ int main(int argc, char* argv[])
         printf("%s, ", type);
         printf("IN, "); // It should always be internet
 
-        long* p;
-        p = (long*)answers[i].rdata;
-        struct sockaddr_in a;
-        a.sin_addr.s_addr = (*p); // Works without ntohl
-        printf("%s\n", inet_ntoa(a.sin_addr));
+        printf("%d, ", ntohl(answers[i].resource->ttl));
 
-        //printf("  %s., %s, %s, %s, %s\n", answers[i].name, args.record_AAAA ? "AAAA" : "A", "IN", args.port_str, );
+        if (ntohs(answers[i].resource->type) != R_CNAME) {
+            long* p;
+            p = (long*)answers[i].rdata;
+            struct sockaddr_in a;
+            a.sin_addr.s_addr = (*p); // Works without ntohl
+            printf("%s\n", inet_ntoa(a.sin_addr));
+        } else {
+            printf("%s.\n", answers[i].rdata);
+        }
 
     }
  
@@ -658,7 +662,6 @@ int main(int argc, char* argv[])
             reader += stop;
         }
     }
- 
 
 
 #if 0 
