@@ -29,7 +29,7 @@
 
 #define DEFAULT_PORT 53
 
-#define MAX_HOST_LEN 1025 // Same as NI_MAXHOST from <netdb.h>
+//#define MAX_HOST_LEN 1025 // Same as NI_MAXHOST from <netdb.h>
 
 #define R_A 1 // Ipv4 record
 #define R_CNAME 5 // Canonical Name record
@@ -161,37 +161,6 @@ void dns_host_to_network_format(unsigned char* dst, unsigned char* src)
     src[strlen((char*)src)-1] = '\0';
 }
 
-/*
-<label> ::= <letter> [ [ <ldh-str> ] <let-dig> ]
-
-<ldh-str> ::= <let-dig-hyp> | <let-dig-hyp> <ldh-str>
-
-<let-dig-hyp> ::= <let-dig> | "-"
-
-<let-dig> ::= <letter> | <digit>
-
-<letter> ::= any one of the 52 alphabetic characters A through Z in
-upper case and a through z in lower case
-
-<digit> ::= any one of the ten digits 0 through 9
-
-<label> ::= <letter> [ [ (((<letter> | <digit>) | "-") | ((<letter> | <digit>) | "-") <ldh-str>) ] (<letter> | <digit>) ]
-*/
-
-// Label is a sequence of letters, digits and hyphens but can't end with hyphen
-
-/*
-The labels must follow the rules for ARPANET host names.  They must
-start with a letter, end with a letter or digit, and have as interior
-characters only letters, digits, and hyphen.  There are also some
-restrictions on the length.  Labels must be 63 characters or less.
-*/
-
-/*
-label must be between 3 and 63 characters long
-name is 255
-*/
-
 bool valid_dns_symbol(char c) 
 {
     bool is_letter = c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z';
@@ -200,7 +169,7 @@ bool valid_dns_symbol(char c)
     return is_letter || is_digit || is_hyphen;
 }
 
-unsigned char* ReadName(unsigned char* reader, unsigned char* buffer, int* count)
+unsigned char* dns_read_name(unsigned char* reader, unsigned char* buffer, int* count)
 {
     unsigned char *name;
     unsigned int p = 0, jumped = 0, offset;
@@ -336,18 +305,13 @@ int main(int argc, char* argv[])
         terminate(retcode);
     }
 
-    char* port_str = NULL;
-    if (args.port != DEFAULT_PORT) {
-        port_str = args.port_str;
-    }
+    
 
-    char server_ip[MAX_HOST_LEN];
+    char server_ip[INET6_ADDRSTRLEN+1];
     resolve_server_address(args.server_name, args.port_str, server_ip);
 
     unsigned char buf[65536], *qname, *reader;
     int i, j, stop;
- 
-    
  
     struct RES_RECORD answers[20], auth[20], addit[20]; //the replies from the DNS server
     struct sockaddr_in dest;
@@ -452,7 +416,7 @@ int main(int argc, char* argv[])
  
     for (i = 0; i < ntohs(dns->ans_count); ++i)
     {
-        answers[i].name = ReadName(reader, buf, &stop);
+        answers[i].name = dns_read_name(reader, buf, &stop);
         reader = reader + stop;
  
         answers[i].resource = (struct R_DATA*)(reader);
@@ -474,7 +438,7 @@ int main(int argc, char* argv[])
         }
         else
         {
-            answers[i].rdata = ReadName(reader, buf, &stop);
+            answers[i].rdata = dns_read_name(reader, buf, &stop);
             reader = reader + stop;
         }
 
@@ -521,13 +485,13 @@ int main(int argc, char* argv[])
 
     //read authorities
     for (i = 0; i < ntohs(dns->auth_count); i++) {
-        auth[i].name = ReadName(reader, buf, &stop);
+        auth[i].name = dns_read_name(reader, buf, &stop);
         reader += stop;
  
         auth[i].resource = (struct R_DATA*)(reader);
         reader += sizeof(struct R_DATA);
  
-        auth[i].rdata = ReadName(reader, buf, &stop);
+        auth[i].rdata = dns_read_name(reader, buf, &stop);
         reader += stop;
     }
  
@@ -535,7 +499,7 @@ int main(int argc, char* argv[])
 
     //read additional
     for (i = 0; i < ntohs(dns->add_count); i++) {
-        addit[i].name = ReadName(reader, buf, &stop);
+        addit[i].name = dns_read_name(reader, buf, &stop);
         reader += stop;
  
         addit[i].resource = (struct R_DATA*)(reader);
@@ -552,7 +516,7 @@ int main(int argc, char* argv[])
             reader += ntohs(addit[i].resource->data_len);
         }
         else {
-            addit[i].rdata = ReadName(reader, buf, &stop);
+            addit[i].rdata = dns_read_name(reader, buf, &stop);
             reader += stop;
         }
     }
@@ -613,3 +577,36 @@ int main(int argc, char* argv[])
 
     terminate(retcode);
 }
+
+
+
+/*
+<label> ::= <letter> [ [ <ldh-str> ] <let-dig> ]
+
+<ldh-str> ::= <let-dig-hyp> | <let-dig-hyp> <ldh-str>
+
+<let-dig-hyp> ::= <let-dig> | "-"
+
+<let-dig> ::= <letter> | <digit>
+
+<letter> ::= any one of the 52 alphabetic characters A through Z in
+upper case and a through z in lower case
+
+<digit> ::= any one of the ten digits 0 through 9
+
+<label> ::= <letter> [ [ (((<letter> | <digit>) | "-") | ((<letter> | <digit>) | "-") <ldh-str>) ] (<letter> | <digit>) ]
+*/
+
+// Label is a sequence of letters, digits and hyphens but can't end with hyphen
+
+/*
+The labels must follow the rules for ARPANET host names.  They must
+start with a letter, end with a letter or digit, and have as interior
+characters only letters, digits, and hyphen.  There are also some
+restrictions on the length.  Labels must be 63 characters or less.
+*/
+
+/*
+label must be between 3 and 63 characters long
+name is 255
+*/
