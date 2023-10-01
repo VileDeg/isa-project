@@ -1,45 +1,19 @@
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdint.h>
 
-struct Args {
-    bool i_flag; // interface flag (-i or --interface)
-    std::string interface;
-    int port;
-    // Protocol flags
-    bool tcp;
-    bool udp;
-    bool arp;
-    bool icmp4;
-    bool icmp6;
-    bool ndp;
-    bool igmp;
-    bool mld;
-    
-    bool n_flag; // num flag (-n or --num)
-    int num;
+#define MAX_DOMAIN_NAME_LEN 253
+#define PORT_STR_LEN 5
+#define MAX_ADDR_LEN 65536
 
-    Args() : i_flag(false), interface(""), port(-1), 
-        tcp(false), udp(false), arp(false), icmp4(false), 
-        icmp6(false), ndp(false), igmp(false), mld(false),
-        n_flag(false), num(1) 
-    {}
+typedef struct {
+    bool recursion_desired;
+    bool reverse_call;
+    bool record_AAAA;
+    unsigned char server_name[MAX_DOMAIN_NAME_LEN+1];
+    uint16_t port;
+    char port_str[PORT_STR_LEN+1];
+    char address_str[MAX_ADDR_LEN];
+} args_t;
 
-    int parse(int argc, char** argv);
 
-    // Builds a filter string for pcap_compile
-    std::string assemble_filter();
-    
-    int num_of_protocols_set() const {
-        return tcp + udp + arp + icmp4 + icmp6 + ndp + igmp + mld;
-    }
-
-    bool just_print_interfaces() const {
-        bool other_not_set = port == -1 && 
-            !tcp && !udp && !arp && !icmp4 && !icmp6 && 
-            !ndp && !igmp && !mld && !n_flag;
-
-        /* If -i or --interface is set, but no other flags are set
-           or if there were no flags set at all */
-        return (!i_flag && other_not_set) || (i_flag && interface == "" && other_not_set);
-    }
-};
+int parse_args(int argc, char** argv, args_t* outa);
