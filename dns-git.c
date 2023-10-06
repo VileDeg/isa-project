@@ -30,7 +30,7 @@ unsigned char* ReadName (unsigned char*,unsigned char*,int*);
 void get_dns_servers();
  
 //DNS header structure
-struct DNS_HEADER
+struct dns_header_t
 {
     unsigned short id; // identification number
  
@@ -53,7 +53,7 @@ struct DNS_HEADER
 };
  
 //Constant sized fields of query structure
-struct QUESTION
+struct dns_qdata_t
 {
     unsigned short qtype;
     unsigned short qclass;
@@ -61,7 +61,7 @@ struct QUESTION
  
 //Constant sized fields of the resource record structure
 #pragma pack(push, 1)
-struct R_DATA
+struct dns_ansdata_t
 {
     unsigned short type;
     unsigned short _class;
@@ -71,10 +71,10 @@ struct R_DATA
 #pragma pack(pop)
  
 //Pointers to resource record contents
-struct RES_RECORD
+struct dns_answer_t
 {
     unsigned char *name;
-    struct R_DATA *resource;
+    struct dns_ansdata_t *resource;
     unsigned char *rdata;
 };
  
@@ -82,8 +82,8 @@ struct RES_RECORD
 typedef struct
 {
     unsigned char *name;
-    struct QUESTION *ques;
-} QUERY;
+    struct dns_qdata_t *ques;
+} dns_question_t;
  
 int main( int argc , char *argv[])
 {
@@ -112,11 +112,11 @@ void ngethostbyname(unsigned char *host , int query_type)
  
     struct sockaddr_in a;
  
-    struct RES_RECORD answers[20],auth[20],addit[20]; //the replies from the DNS server
+    struct dns_answer_t answers[20],auth[20],addit[20]; //the replies from the DNS server
     struct sockaddr_in dest;
  
-    struct DNS_HEADER *dns = NULL;
-    struct QUESTION *qinfo = NULL;
+    struct dns_header_t *dns = NULL;
+    struct dns_qdata_t *qinfo = NULL;
  
     printf("Resolving %s" , host);
  
@@ -127,7 +127,7 @@ void ngethostbyname(unsigned char *host , int query_type)
     dest.sin_addr.s_addr = inet_addr(dns_servers[0]); //dns servers
  
     //Set the DNS structure to standard queries
-    dns = (struct DNS_HEADER *)&buf;
+    dns = (struct dns_header_t *)&buf;
  
     dns->id = (unsigned short) htons(getpid());
     dns->qr = 0; //This is a query
@@ -146,16 +146,16 @@ void ngethostbyname(unsigned char *host , int query_type)
     dns->add_count = 0;
  
     //point to the query portion
-    qname =(unsigned char*)&buf[sizeof(struct DNS_HEADER)];
+    qname =(unsigned char*)&buf[sizeof(struct dns_header_t)];
  
     ChangetoDnsNameFormat(qname , host);
-    qinfo =(struct QUESTION*)&buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 1)]; //fill it
+    qinfo =(struct dns_qdata_t*)&buf[sizeof(struct dns_header_t) + (strlen((const char*)qname) + 1)]; //fill it
  
     qinfo->qtype = htons( query_type ); //type of the query , A , MX , CNAME , NS etc
     qinfo->qclass = htons(1); //its internet (lol)
  
     printf("\nSending Packet...");
-    if( sendto(s,(char*)buf,sizeof(struct DNS_HEADER) + (strlen((const char*)qname)+1) + sizeof(struct QUESTION),0,(struct sockaddr*)&dest,sizeof(dest)) < 0)
+    if( sendto(s,(char*)buf,sizeof(struct dns_header_t) + (strlen((const char*)qname)+1) + sizeof(struct dns_qdata_t),0,(struct sockaddr*)&dest,sizeof(dest)) < 0)
     {
         perror("sendto failed");
     }
@@ -170,10 +170,10 @@ void ngethostbyname(unsigned char *host , int query_type)
     }
     printf("Done");
  
-    dns = (struct DNS_HEADER*) buf;
+    dns = (struct dns_header_t*) buf;
  
     //move ahead of the dns header and the query field
-    reader = &buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname)+1) + sizeof(struct QUESTION)];
+    reader = &buf[sizeof(struct dns_header_t) + (strlen((const char*)qname)+1) + sizeof(struct dns_qdata_t)];
  
     printf("\nThe response contains : ");
     printf("\n %d Questions.",ntohs(dns->q_count));
@@ -189,8 +189,8 @@ void ngethostbyname(unsigned char *host , int query_type)
         answers[i].name=ReadName(reader,buf,&stop);
         reader = reader + stop;
  
-        answers[i].resource = (struct R_DATA*)(reader);
-        reader = reader + sizeof(struct R_DATA);
+        answers[i].resource = (struct dns_ansdata_t*)(reader);
+        reader = reader + sizeof(struct dns_ansdata_t);
  
         if(ntohs(answers[i].resource->type) == 1) //if its an ipv4 address
         {
@@ -218,8 +218,8 @@ void ngethostbyname(unsigned char *host , int query_type)
         auth[i].name=ReadName(reader,buf,&stop);
         reader+=stop;
  
-        auth[i].resource=(struct R_DATA*)(reader);
-        reader+=sizeof(struct R_DATA);
+        auth[i].resource=(struct dns_ansdata_t*)(reader);
+        reader+=sizeof(struct dns_ansdata_t);
  
         auth[i].rdata=ReadName(reader,buf,&stop);
         reader+=stop;
@@ -231,8 +231,8 @@ void ngethostbyname(unsigned char *host , int query_type)
         addit[i].name=ReadName(reader,buf,&stop);
         reader+=stop;
  
-        addit[i].resource=(struct R_DATA*)(reader);
-        reader+=sizeof(struct R_DATA);
+        addit[i].resource=(struct dns_ansdata_t*)(reader);
+        reader+=sizeof(struct dns_ansdata_t);
  
         if(ntohs(addit[i].resource->type)==1)
         {

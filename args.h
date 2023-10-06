@@ -1,14 +1,17 @@
+#ifndef __ARGS_H__
+#define __ARGS_H__
+
 #include <stdbool.h>
 #include <stdint.h>
 
-#define MAX_DOMAIN_NAME_LEN 253
+#define MAX_DOMAIN_NAME_LEN 255
 #define PORT_STR_LEN 5
 #define MAX_ADDR_LEN 65536
 
 typedef struct {
     bool recursion_desired;
     bool reverse_call;
-    bool record_AAAA;
+    bool type_ipv6;
     unsigned char server_name[MAX_DOMAIN_NAME_LEN+1];
     uint16_t port;
     char port_str[PORT_STR_LEN+1];
@@ -17,3 +20,5 @@ typedef struct {
 
 
 int parse_args(int argc, char** argv, args_t* outa);
+
+#endif // !__ARGS_H__

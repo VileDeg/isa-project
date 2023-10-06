@@ -2,22 +2,22 @@ CC=gcc
 DBGFLAGS=-g -DDEBUG
 CFLAGS=-Wall -std=c99 $(DBGFLAGS)
 
-NAME=dns
+EXE=dns
 
-SRCS=$(NAME).c args.c
+SRCS=$(EXE).c args.c dns_packet.c pkt_print.c
 OBJS:=$(SRCS:c=o)
 
-HDRS=args.h
+HDRS=base.h args.h dns_packet.h pkt_print.h
 
-.phony: all $(NAME) clean
+.phony: all $(EXE) clean
 
-all: $(NAME)
+all: $(EXE)
 
-$(NAME): $(OBJS) Makefile
+$(EXE): $(OBJS) Makefile
 	$(CC) -o $@ $(OBJS)
 
-$(OBJS): %.o: %.c Makefile
+$(OBJS): %.o: %.c Makefile $(HDRS)
 	$(CC) -c $< $(CFLAGS)
 
 clean:
-	rm -f $(NAME) $(OBJS)
+	rm -f $(EXE) $(OBJS)

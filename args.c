@@ -1,9 +1,5 @@
+#include "base.h"
 #include "args.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
 
 #define MIN_PORT 0
 #define MAX_PORT 65535
@@ -33,6 +29,7 @@ int parse_args(int argc, char** argv, args_t* outa)
             {
             case 'r': // -r
                 if (flags.r) {
+                    sprintf(stderr, "Duplicated flag: -%c\n", flag);
                     return 1; // Duplicated flag;
                 }
                 outa->recursion_desired = true;
@@ -40,6 +37,7 @@ int parse_args(int argc, char** argv, args_t* outa)
                 break;
             case 'x': // -x
                 if (flags.x) {
+                    sprintf(stderr, "Duplicated flag: -%c\n", flag);
                     return 1; // Duplicated flag;
                 }
                 outa->reverse_call = true;
@@ -47,19 +45,22 @@ int parse_args(int argc, char** argv, args_t* outa)
                 break;
             case '6': // -6
                 if (flags._6) {
+                    sprintf(stderr, "Duplicated flag: -%c\n", flag);
                     return 1; // Duplicated flag;
                 }
                 flags._6 = true;
-                outa->record_AAAA = true;
+                outa->type_ipv6 = true;
                 break;
             case 's':
                 if (flags.s) {
+                    sprintf(stderr, "Duplicated flag: -%c\n", flag);
                     return 1; // Duplicated flag;
                 }
                 flags.s = true;
                 break;
             case 'p':
                 if (flags.p) {
+                    sprintf(stderr, "Duplicated flag: -%c\n", flag);
                     return 1; // Duplicated flag;
                 }
                 flags.p = true;
