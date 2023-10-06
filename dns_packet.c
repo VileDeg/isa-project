@@ -325,7 +325,6 @@ int dns_receive_answers(int sock_fd, struct sockaddr_in addr, char* domain_name_
         dns_answer_free();
     }
  
-#if 1
     printf("Authority section (%d)\n", ntohs(dns->auth_count));
     //read authorities
     for (int i = 0; i < ntohs(dns->auth_count); ++i) {
@@ -344,46 +343,7 @@ int dns_receive_answers(int sock_fd, struct sockaddr_in addr, char* domain_name_
         }
         reader += ans_real_len;
         dns_answer_free();
-    }
-#else
-    printf("Authority section (%d)\n", ntohs(dns->auth_count));
-    //read authorities
-    for (int i = 0; i < ntohs(dns->auth_count); ++i) {
-        auth[i].name = dns_read_name(reader, buf, &stop);
-        reader += stop;
- 
-        auth[i].resource = (dns_ansdata_t*)(reader);
-        reader += sizeof(dns_ansdata_t);
- 
-        auth[i].rdata = dns_read_name(reader, buf, &stop);
-        reader += stop;
-    }
- 
-    printf("Additional section (%d)\n", ntohs(dns->add_count));
-    //read additional
-    for (int i = 0; i < ntohs(dns->add_count); ++i) {
-        addit[i].name = dns_read_name(reader, buf, &stop);
-        reader += stop;
- 
-        addit[i].resource = (dns_ansdata_t*)(reader);
-        reader += sizeof(dns_ansdata_t);
- 
-        if (ntohs(addit[i].resource->type) == 1) {
-            addit[i].rdata = (uchar*)malloc(ntohs(addit[i].resource->data_len));
-            // TODO: replace with memcpy?
-            for(int j = 0; j < ntohs(addit[i].resource->data_len); j++) {
-                addit[i].rdata[j]=reader[j];
-            }
- 
-            addit[i].rdata[ntohs(addit[i].resource->data_len)] = '\0';
-            reader += ntohs(addit[i].resource->data_len);
-        }
-        else {
-            addit[i].rdata = dns_read_name(reader, buf, &stop);
-            reader += stop;
-        }
     }
 
-#endif    
     return 0;
 }
