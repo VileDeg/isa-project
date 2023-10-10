@@ -21,7 +21,6 @@ int parse_args(int argc, char** argv, args_t* outa)
         char* a = argv[i];
         char c = a[0];
         
-        
         if (c == '-') {
             flag = a[1];
 
@@ -29,7 +28,7 @@ int parse_args(int argc, char** argv, args_t* outa)
             {
             case 'r': // -r
                 if (flags.r) {
-                    sprintf(stderr, "Duplicated flag: -%c\n", flag);
+                    fprintf(stderr, "Duplicated flag: -%c\n", flag);
                     return 1; // Duplicated flag;
                 }
                 outa->recursion_desired = true;
@@ -37,30 +36,32 @@ int parse_args(int argc, char** argv, args_t* outa)
                 break;
             case 'x': // -x
                 if (flags.x) {
-                    sprintf(stderr, "Duplicated flag: -%c\n", flag);
+                    fprintf(stderr, "Duplicated flag: -%c\n", flag);
                     return 1; // Duplicated flag;
                 }
-                outa->reverse_call = true;
+                //outa->reverse_call = true;
+                outa->query_type = T_PTR;
                 flags.x = true;
                 break;
             case '6': // -6
                 if (flags._6) {
-                    sprintf(stderr, "Duplicated flag: -%c\n", flag);
+                    fprintf(stderr, "Duplicated flag: -%c\n", flag);
                     return 1; // Duplicated flag;
                 }
+                //outa->type_ipv6 = true;
+                outa->query_type = T_AAAA;
                 flags._6 = true;
-                outa->type_ipv6 = true;
                 break;
             case 's':
                 if (flags.s) {
-                    sprintf(stderr, "Duplicated flag: -%c\n", flag);
+                    fprintf(stderr, "Duplicated flag: -%c\n", flag);
                     return 1; // Duplicated flag;
                 }
                 flags.s = true;
                 break;
             case 'p':
                 if (flags.p) {
-                    sprintf(stderr, "Duplicated flag: -%c\n", flag);
+                    fprintf(stderr, "Duplicated flag: -%c\n", flag);
                     return 1; // Duplicated flag;
                 }
                 flags.p = true;
@@ -100,6 +101,12 @@ int parse_args(int argc, char** argv, args_t* outa)
     }
 
     if (!server_set || !address_set) { // mandatory options not set
+        fprintf(stderr, "DNS server and domain name must always be specified.\n");
+        return 1;
+    }
+
+    if (flags.x && flags._6) { //
+        fprintf(stderr, "Invalid combination of flags '-x' and '-6'.\n");
         return 1;
     }
 

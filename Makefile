@@ -4,10 +4,10 @@ CFLAGS=-Wall -std=c99 $(DBGFLAGS)
 
 EXE=dns
 
-SRCS=$(EXE).c args.c dns_packet.c pkt_print.c
+SRCS=$(EXE).c args.c server.c dns_packet.c pkt_print.c
 OBJS:=$(SRCS:c=o)
 
-HDRS=base.h args.h dns_packet.h pkt_print.h
+HDRS=base.h args.h server.h dns_packet.h pkt_print.h
 
 .phony: all $(EXE) clean
 

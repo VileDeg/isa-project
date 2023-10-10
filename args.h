@@ -10,8 +10,9 @@
 
 typedef struct {
     bool recursion_desired;
-    bool reverse_call;
-    bool type_ipv6;
+    //bool reverse_call;
+    //bool type_ipv6;
+    uint16_t query_type;
     unsigned char server_name[MAX_DOMAIN_NAME_LEN+1];
     uint16_t port;
     char port_str[PORT_STR_LEN+1];

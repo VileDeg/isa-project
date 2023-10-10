@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/dns",
-            "args": ["-r", "-s", "dns.google", "www.github.com"], //"kazi.fit.vutbr.cz"
+            "args": ["-r", "-x", "-s", "dns.google", "www.github.com"], //"kazi.fit.vutbr.cz"
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

@@ -56,19 +56,7 @@ typedef struct {
 
 void dns_answer_free();
 
-void dns_host_to_network_format(uchar* dst, uchar* src);
-
-uchar* dns_read_name(uchar* reader, uchar* buffer, int* count);
-
-void dns_send_question(int sock_fd, struct sockaddr_in addr, char* domain_name_to_resolve, bool recursion_desired, uint16_t record_type);
-
-const char* dns_record_type_to_str(uint16_t type);
-
-int dns_print_answer(dns_answer_t ans);
-
-int dns_parse_answer(dns_answer_t* ans, uchar* reader, int* ans_real_len);
-
-int dns_parse_rcode(uint8_t rcode);
+int dns_send_question(int sock_fd, struct sockaddr_in addr, char* domain_name_to_resolve, bool recursion_desired, uint16_t record_type);
 
 int dns_receive_answers(int sock_fd, struct sockaddr_in addr, char* domain_name_to_resolve);
 
