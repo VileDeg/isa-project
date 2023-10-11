@@ -39,7 +39,6 @@ int parse_args(int argc, char** argv, args_t* outa)
                     fprintf(stderr, "Duplicated flag: -%c\n", flag);
                     return 1; // Duplicated flag;
                 }
-                //outa->reverse_call = true;
                 outa->query_type = T_PTR;
                 flags.x = true;
                 break;
@@ -48,7 +47,6 @@ int parse_args(int argc, char** argv, args_t* outa)
                     fprintf(stderr, "Duplicated flag: -%c\n", flag);
                     return 1; // Duplicated flag;
                 }
-                //outa->type_ipv6 = true;
                 outa->query_type = T_AAAA;
                 flags._6 = true;
                 break;
@@ -109,8 +107,6 @@ int parse_args(int argc, char** argv, args_t* outa)
         fprintf(stderr, "Invalid combination of flags '-x' and '-6'.\n");
         return 1;
     }
-
-    //TODO validate address
     
     return 0;
 }

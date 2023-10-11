@@ -9,9 +9,6 @@ void terminate(int code) {
     if (sock_fd >= 0) {
         close(sock_fd);
     }
-
-    dns_answer_free();
-    
     exit(code);
 }   
 
@@ -66,8 +63,6 @@ int main(int argc, char* argv[])
     addr.sin_family = AF_INET;
     addr.sin_port = htons(args.port);
     addr.sin_addr.s_addr = inet_addr(server_ip); // Convert dns server address to binary network format
-
-    //uint16_t record_type = args.type_ipv6 ? T_AAAA : T_A;
 
     if (dns_send_question(sock_fd, addr, args.address_str, args.recursion_desired, args.query_type) != 0) {
         terminate(1);
