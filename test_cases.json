@@ -36,5 +36,38 @@
         "recursive": false,
         "inverse": true,
         "aaaa": false
+    },
+    {
+        "address": "www.github.com",
+        "recursive": true,
+        "inverse": false,
+        "aaaa": true
+    },
+    {
+        "address": "www.example.com",
+        "recursive": true,
+        "inverse": false,
+        "aaaa": true
+    },
+    {
+        "server": "kazi.fit.vutbr.cz",
+        "address": "www.github.com",
+        "recursive": true,
+        "inverse": false,
+        "aaaa": false
+    },
+    {
+        "server": "kazi.fit.vutbr.cz",
+        "address": "www.example.com",
+        "recursive": true,
+        "inverse": false,
+        "aaaa": true
+    },
+    {
+        "server": "kazi.fit.vutbr.cz",
+        "address": "www.example.com",
+        "recursive": false,
+        "inverse": false,
+        "aaaa": true
     }
 ]

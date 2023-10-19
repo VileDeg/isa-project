@@ -77,6 +77,9 @@ const char* dns_record_type_to_str(uint16_t type)
     case T_PTR:
         memcpy(tbuf, "PTR", 3);
         break;
+    case T_NS:
+        memcpy(tbuf, "NS", 2);
+        break;
     default:
         snprintf(tbuf, 15, "%d", type);
         break;
@@ -88,7 +91,7 @@ uchar* dns_read_name(uchar* reader, uchar* buffer, int* count)
 {
     uchar *name;
     unsigned int p = 0, jumped = 0, offset;
-    int i, j;
+    
  
     *count = 1;
     name = (uchar*)malloc(256);
@@ -96,48 +99,43 @@ uchar* dns_read_name(uchar* reader, uchar* buffer, int* count)
     name[0] = '\0';
  
     //read the names in 3www6google3com format
-    while (*reader != '\0')
-    {
+    while (*reader != '\0') {
         uchar msb = *reader;
         uchar lsb = *(reader+1);
 
-        if (msb >= 192) // 192 = 1100 0000
-        {
+        if (msb >= 192) { // 192 = 1100 0000 
             offset = msb * 256 + lsb - 49152; // 49152 = 1100 0000  0000 0000
             reader = buffer + offset - 1;
             jumped = 1; // We have jumped to another location so counting wont go up!
-        }
-        else
-        {
+        } else {
             name[p++] = *reader;
         }
  
         reader = reader + 1;
  
-        if (jumped == 0)
-        {
-            *count = *count + 1; //if we havent jumped to another location then we can count up
+        if (jumped == 0) {
+            *count += 1; //if we havent jumped to another location then we can count up
         }
     }
  
     name[p] = '\0'; //string complete
-    if (jumped == 1)
-    {
-        *count = *count + 1; //number of steps we actually moved forward in the packet
+    if (jumped == 1) {
+        *count += 1; //number of steps we actually moved forward in the packet
     }
  
     //now convert 3www6google3com0 to www.google.com
-    for (i = 0; i < (int)strlen((const char*)name); i++) 
-    {
+    int i = 0;
+    for (i = 0; i < (int)strlen((const char*)name); i++) {
         p = name[i];
-        for (j = 0; j < (int)p; j++) 
-        {
+        for (int j = 0; j < (int)p; j++) {
             name[i] = name[i+1];
             i = i + 1;
         }
         name[i] = '.';
     }
-    name[i-1] = '\0'; //remove the last dot
+    if (i > 0) {
+        name[i-1] = '\0'; //remove the last dot
+    }
     return name;
 }
 
@@ -255,7 +253,7 @@ int dns_parse_answer(dns_answer_t* ans, uchar* reader, int* ans_real_len)
 
             reader += stop;
 
-            printf("%s.\n", ans->rdata);
+            printf("%s.\n", ans->rdata);  
             break;            
         default:
             printf("\n");

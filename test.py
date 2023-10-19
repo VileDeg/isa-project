@@ -1,6 +1,7 @@
 import re
 import json
 import subprocess
+import argparse
 
 from enum import Enum
 
@@ -27,9 +28,9 @@ DEFAULT_IPv4     = '140.82.121.4' # github.com
 COMPARE_TTL = False # TTL will most likely be different so no point to compare
 
 class DnsSection(Enum):
-    QUESTION = "Question section"
-    ANSWER = "Answer section"
-    AUTHORITY = "Authority section"
+    QUESTION   = "Question section"
+    ANSWER     = "Answer section"
+    AUTHORITY  = "Authority section"
     ADDITIONAL = "Additional section"
 
 class DigSection(Enum):
@@ -38,124 +39,156 @@ class DigSection(Enum):
     AUTHORITY = "AUTHORITY SECTION"
     ADDITIONAL = "ADDITIONAL SECTION"
 
+    
+def dns_get_sections(lines) -> dict:
+    sections = {}
 
+    patterns = [re.escape(section.value) for section in DnsSection]
+    pattern = '|'.join(patterns)
 
-def dns_get_section(lines, section : DnsSection) -> dict:
-    for i, line in enumerate(lines):
-        if section.value in line:
-            first = line.find("(")
-            last = line.find(")")
-            num = line[first+1:last]
+    idx = [i for i, line in enumerate(lines) if re.search(pattern, line)]
+    assert len(idx) == len(DnsSection), \
+        f"{DNS_PROGRAM_NAME} Error: Output must contain all {len(DnsSection)} sections"
+    
+    for i, id in enumerate(idx):
+        ds = list(DnsSection)[i]
+        sl  = lines[id]
+        match = re.search(r"\((.*?)\)", sl)
+        if match:
             try:
-                if int(num) == 0:
-                    return None
+                cnt = int(match.group(1))
             except ValueError:
-                print(f"{DNS_PROGRAM_NAME} Error: Could not convert [{num}] to an integer")
+                print(f"{DNS_PROGRAM_NAME} Error: Could not convert [{match.group(1)}] to an integer")
                 exit(1)
-
-            try:
-                next_line = lines[i+1]
-            except IndexError:
-                print(f"{DNS_PROGRAM_NAME} Error: Section has [{num}] queries but there are no more lines in the output")
-                exit(1)
-
-            parts = [part.strip() for part in next_line.strip(";\n").split(',')]
+        else:
+            print(f"{DNS_PROGRAM_NAME} Error: Could not find number of lines in section")
+            exit(1)
+        
+        dns_sec = []
+        for line in lines[id+1:id+1+cnt]:
+            parts = [part.strip() for part in line.strip(";\n").split(',')]
             try:
                 dns = {
-                    'name': parts[0],
-                    'type': parts[1],
+                    'name' : parts[0],
+                    'type' : parts[1],
                     'class': parts[2]
                 }
-                if section is not DnsSection.QUESTION:
-                    dns['ttl'] = parts[3]
+                if ds is not DnsSection.QUESTION:
+                    dns['ttl']   = parts[3]
                     dns['rdata'] = parts[4]
             except IndexError:
                 print(f"{DNS_PROGRAM_NAME} Error: Not enough parts in line")
                 exit(1)
-            return dns
-    print(f"{DNS_PROGRAM_NAME} Error: Could not find [{section}] section in output")
-    exit(1)
+            dns_sec.append(dns)
+        sections[ds] = dns_sec
+    
+    return sections
 
+def dig_get_sections(lines) -> dict:
+    sections = {}
 
-def dig_get_section(lines, section : DigSection) -> dict:
-    for i, line in enumerate(lines):
-        if section.value in line:
-            try:
-                next_line = lines[i+1]
-            except IndexError:
-                print(f"{DIG_PROGRAM_NAME} Error: Section contaisn no more lines")
-                exit(1)
-            # write code to split next_line by whitespace
-            parts = [part.strip() for part in next_line.strip(";\n").split()]
+    patterns = [re.escape(section.value) for section in DigSection]
+    pattern = '|'.join(patterns)
+
+    idx = [i for i, line in enumerate(lines) if re.search(pattern, line)]
+    idx.append(len(lines)-1)
+    
+    for i in range(len(idx)-1):
+        id = idx[i]
+        next_id = idx[i+1]
+        ds = list(DigSection)[i]
+
+        dig_sec = []
+        for line in lines[id+1:next_id]:
+            if line.strip() == '':
+                continue
+            parts = [part.strip() for part in line.strip(";\n").split()]
             try:
                 dig = {
                     'name': parts[0],
-                    
-                    #'class': parts[1],
-                    # 'ttl': parts[3],
-                    # 'rdata' : parts[4]
                 }
-                if section is not DigSection.QUESTION:
+                
+                if ds is not DigSection.QUESTION:
                     if len(parts) > 4:
-                        dig['type'] = parts[3]
+                        dig['type']  = parts[3]
                         dig['class'] = parts[2]
-                        dig['ttl'] = parts[1]
+                        dig['ttl']   = parts[1]
                         dig['rdata'] = parts[4]
                     else:
-                        dig['type'] = parts[2]
+                        dig['type']  = parts[2]
                         dig['class'] = parts[1]
                         dig['rdata'] = parts[3]
                 else:
-                    dig['type'] = parts[2]
+                    dig['type']  = parts[2]
                     dig['class'] = parts[1]
 
             except IndexError:
                 print(f"{DIG_PROGRAM_NAME} Error: Not enough parts in line")
                 exit(1)
-            return dig
-    return None        
+            dig_sec.append(dig)
+        sections[ds] = dig_sec
+    
+    # Append empty missing sections
+    for ds in DigSection:
+        if ds not in sections:
+            sections[ds] = []
+    
+    return sections
 
-
-def compare_section(dig_output, dns_output, dig_section, dns_section):
-    if DEBUG:
-        print(f"Comparing {dig_section} to {dns_section}")
-
-    dns_sec = dns_get_section(dns_output, dns_section)
-    dig_sec = dig_get_section(dig_output, dig_section)
-
-    if dns_sec is not None and dig_sec is not None:        
-        if DEBUG:
-            print(f"\tdig: {dig_sec}\n")
-            print(f"\tdns: {dns_sec}")
-
-        if dig_sec['name'] != dns_sec['name'] or \
-                dig_sec['class'] != dns_sec['class'] or \
-                dig_sec['type'] != dns_sec['type']:
+def compare_section_line(dig_line, dns_line):
+    if dig_line['name']   != dns_line['name'] or \
+        dig_line['class'] != dns_line['class'] or \
+        dig_line['type']  != dns_line['type']:
+        return False
+        
+    if COMPARE_TTL:
+        if dig_line.get('ttl') != dns_line.get('ttl'):
             return False
         
-        if COMPARE_TTL:
-            if dig_sec.get('ttl') != dns_sec.get('ttl'):
-                return False
-            
-        if dig_sec.get('rdata') != dns_sec.get('rdata'):
-            return False
-    elif dns_sec is not None and dig_sec is None:
-        print(f"{bcolors.FAIL}Error: {DNS_PROGRAM_NAME} has [{dns_section}] section that shouldn't be there{bcolors.ENDC}")
-    elif dns_sec is None and dig_sec is not None:
-        print(f"{bcolors.FAIL}Error: {DNS_PROGRAM_NAME} is missing [{dns_section}] section{bcolors.ENDC}")
-        
-    if DEBUG:
-        print(f"\t{bcolors.OKGREEN}COMPARISON SUCCESS{bcolors.ENDC}")
-    return True
-
-def compare_output(dig_output, dns_output):
-   
-    for dig_section, dns_section in zip(DigSection, DnsSection):
-        if not compare_section(dig_output, dns_output, dig_section, dns_section):
-            return False
+    if dig_line.get('rdata') != dns_line.get('rdata'):
+        return False
     
     return True
 
+def compare_section(dig_section, dns_section):
+
+    if dig_section and dns_section:
+
+        for dns_line in dns_section:
+            line_found = False
+            if DEBUG:
+                print(f"\t{bcolors.OKCYAN}{DNS_PROGRAM_NAME} looking for line: {dns_line}{bcolors.ENDC}")
+            for dig_line in dig_section:
+                if compare_section_line(dig_line, dns_line):
+                    line_found = True
+                    break
+            if line_found:
+                if DEBUG:
+                    print(f"\t\t{bcolors.OKGREEN}LINE OK{bcolors.ENDC}")
+            else:
+                print(f"{bcolors.FAIL}Error: {DNS_PROGRAM_NAME} is missing a line in [{dns_section}]{bcolors.ENDC}")
+                return False
+        
+    elif dns_section and not dig_section:
+        print(f"{bcolors.FAIL}Error: {DNS_PROGRAM_NAME} section [{dns_section}] must be empty{bcolors.ENDC}")
+    elif not dns_section and dig_section:
+        print(f"{bcolors.FAIL}Error: {DNS_PROGRAM_NAME} section [{dns_section}] must NOT be empty{bcolors.ENDC}")
+        
+    if DEBUG:
+        print(f"\t{bcolors.OKGREEN}SECTION OK{bcolors.ENDC}")
+    return True
+
+def compare_output(dig_output, dns_output):
+    dig_sections = dig_get_sections(dig_output)
+    dns_sections = dns_get_sections(dns_output)
+
+    for (dig, dns) in zip(DigSection, DnsSection):
+        if DEBUG:
+            print(f"{bcolors.OKBLUE}Comparing {dig} to {dns}{bcolors.ENDC}")
+        if not compare_section(dig_sections[dig], dns_sections[dns]):
+            return False
+    
+    return True
 
 def run_test(case):
     try:
@@ -174,8 +207,8 @@ def run_test(case):
         dig_command.append('@' + server)
         if case['inverse']:
             dig_command.append('-x')
-        # if case['aaaa']:
-        #     dig_command.append('-6')
+        elif case['aaaa']:
+            dig_command.append('AAAA')
         dig_command.append(address)
         
 
@@ -236,15 +269,26 @@ def run_test(case):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", "--debug", help="enable debug mode", action="store_true")
+    args = parser.parse_args()
+    
+    if args.debug:
+        print("Debug mode enabled.")
+        DEBUG = True
+    else:
+        print("Debug mode disabled. To enable debug mode use '-d'")
+        DEBUG = True
+
     with open('test_cases.json', 'r') as f:
         test_cases = json.load(f)
         passed = 0
         for i, case in enumerate(test_cases):
             if run_test(case):
                 passed += 1
-                print(f"{bcolors.OKGREEN}PASS ({i+1}/{len(test_cases)}).{bcolors.ENDC}")
+                print(f"{bcolors.OKGREEN}TEST PASSED ({i+1}/{len(test_cases)}).{bcolors.ENDC}")
             else:
-                print(f"{bcolors.FAIL}FAIL ({i+1}/{len(test_cases)}).{bcolors.ENDC}")
+                print(f"{bcolors.FAIL}TEST FAILED ({i+1}/{len(test_cases)}).{bcolors.ENDC}")
         print(f"--------------------------------------------------------------------")
         print(f"{bcolors.OKGREEN}PASSED: {passed}/{len(test_cases)}.{bcolors.ENDC}")
         if passed != len(test_cases):
