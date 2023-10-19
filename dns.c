@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 
     char server_ip[INET6_ADDRSTRLEN];
     //dns_domain_to_ip((char*)args.server_name, args.port_str, server_ip);
-    dns_domain_to_ip((char*)args.server_name, "53", server_ip);
+    dns_domain_to_ip((char*)args.server_name, server_ip);
 
     sock_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 

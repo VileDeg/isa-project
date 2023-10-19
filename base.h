@@ -39,10 +39,10 @@
 #define T_A 1 // Ipv4 record
 #define T_CNAME 5 // Canonical Name record
 #define T_AAAA 28 // Ipv6 record
-// #define T_NS 2 //Nameserver
+#define T_NS 2 //Nameserver
 #define T_SOA 6 /* start of authority zone */
 #define T_PTR 12 /* domain name pointer */
-// #define T_MX 15 //Mail server
+#define T_MX 15 //Mail server
 
 typedef unsigned char uchar;
 

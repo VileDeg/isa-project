@@ -248,17 +248,9 @@ int dns_parse_answer(dns_answer_t* ans, uchar* reader, int* ans_real_len)
             inet_ntop(type == T_A ? AF_INET : AF_INET6, ans->rdata, ip_buf, len);
 
             printf("%s\n", ip_buf);
-            
             break;
-        case T_CNAME:
-            ans->rdata = dns_read_name(reader, buf, &stop);
-
-            reader += stop;
-
-            printf("%s.\n", ans->rdata);
-            break;
-        case T_PTR:
-        case T_SOA:
+        case T_NS: case T_MX: case T_SOA:
+        case T_CNAME: case T_PTR:
             ans->rdata = dns_read_name(reader, buf, &stop);
 
             reader += stop;
@@ -388,7 +380,7 @@ int dns_receive_answers(int sock_fd, struct sockaddr_in addr, char* domain_name_
 }
 
 
-void dns_domain_to_ip(const char* server_domain_name, const char* server_port, char* server_ip)
+void dns_domain_to_ip(const char* server_domain_name, char* server_ip) //const char* server_port, 
 {
     struct addrinfo gai_hints; //ipv4, udp
     memset(&gai_hints, 0, sizeof(struct addrinfo));
@@ -402,7 +394,7 @@ void dns_domain_to_ip(const char* server_domain_name, const char* server_port, c
 
     struct addrinfo* gai_ret = NULL;
     int addr_err = 0;
-    if ((addr_err = getaddrinfo(server_domain_name, server_port, &gai_hints, &gai_ret)) != 0) {
+    if ((addr_err = getaddrinfo(server_domain_name, "53", &gai_hints, &gai_ret)) != 0) {
         fprintf(stderr, "(getaddrinfo) Failed to resolve server address: %s.\n", gai_strerror(addr_err));
     }
 

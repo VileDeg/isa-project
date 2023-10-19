@@ -60,7 +60,7 @@ typedef struct {
 
 void dns_answer_free();
 
-void dns_domain_to_ip(const char* server_domain_name, const char* server_port, char* server_ip);
+void dns_domain_to_ip(const char* server_domain_name, char* server_ip); //, const char* server_port
 
 int dns_send_question(int sock_fd, struct sockaddr_in addr, char* domain_name_to_resolve, bool recursion_desired, uint16_t record_type);
 

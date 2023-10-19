@@ -170,8 +170,7 @@ def run_test(case):
         #dig_command.append('+answer')
         dig_command.append('+nostats')
         #dig_command.append('+nocomments')
-        if case['recursive']:
-            dig_command.append('+recurse')
+        dig_command.append('+recurse' if case['recursive'] else '+norecurse')
         dig_command.append('@' + server)
         if case['inverse']:
             dig_command.append('-x')
