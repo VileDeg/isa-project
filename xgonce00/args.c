@@ -1,7 +1,3 @@
-/* 
- * @author Vadim Goncearenco (xgonce00)
- */
-
 #include "base.h"
 #include "args.h"
 

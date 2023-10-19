@@ -1,7 +1,3 @@
-/* 
- * @author Vadim Goncearenco (xgonce00)
- */
-
 #include <stdbool.h>
 
 #include "base.h"
@@ -24,64 +20,6 @@ void dns_name_to_rfc_format(uchar* dst, uchar* src)
     }
     // Remove the added dot to avoid unexpected behavior
     src[strlen((char*)src)-1] = '\0';
-}
-
-void dns_reverse_byte_order(char* address) {
-    // Check if the address is an IP address
-    struct in_addr ipv4_addr;
-    if (inet_pton(AF_INET, address, &ipv4_addr) == 1) {
-        // Reverse the byte order of the IP address
-        uint32_t addr_value = ntohl(ipv4_addr.s_addr);
-        memcpy(&ipv4_addr.s_addr, &addr_value, sizeof(addr_value));
-        inet_ntop(AF_INET, &ipv4_addr, address, INET_ADDRSTRLEN);
-    } else {
-        // Reverse the byte order of the domain name
-        char* octets[256];
-        char* octet = strtok(address, ".");
-        int num_octets = 0;
-        while (octet != NULL && num_octets < 256) {
-            octets[num_octets++] = octet;
-            octet = strtok(NULL, ".");
-        }
-        char reversed_octets[1024];
-        reversed_octets[0] = '\0';
-        for (int i = num_octets - 1; i >= 0; i--) {
-            strcat(reversed_octets, octets[i]);
-            if (i > 0) {
-                strcat(reversed_octets, ".");
-            }
-        }
-        strcpy(address, reversed_octets);
-    }
-}
-
-const char* dns_record_type_to_str(uint16_t type)
-{
-    static char tbuf[16];
-    memset(tbuf, 0, 16);
-
-    switch (type)
-    {
-    case T_A:
-        memcpy(tbuf, "A", 1);
-        break;
-    case T_AAAA:
-        memcpy(tbuf, "AAAA", 4);
-        break;
-    case T_CNAME:
-        memcpy(tbuf, "CNAME", 5);
-        break;
-    case T_SOA:
-        memcpy(tbuf, "SOA", 3);
-        break;
-    case T_PTR:
-        memcpy(tbuf, "PTR", 3);
-        break;
-    default:
-        snprintf(tbuf, 15, "%d", type);
-        break;
-    }
-    return tbuf;
 }
 
 uchar* dns_read_name(uchar* reader, uchar* buffer, int* count)
@@ -168,39 +106,70 @@ int dns_send_question(int sock_fd, struct sockaddr_in addr, char* domain_name_to
     if (query_type != T_PTR) {
         dns_name_to_rfc_format(qname, (uchar*)domain_name_to_resolve);
     } else {
-        // Reverse the bytes in IP address and append .IN-ADDR.ARPA
-        dns_reverse_byte_order(domain_name_to_resolve);
-        strcat(domain_name_to_resolve, ".in-addr.arpa");
+        // Reverse the bytes in IP address
+        char* dname = malloc(strlen(domain_name_to_resolve)+1);
+        memcpy(dname, domain_name_to_resolve, strlen(domain_name_to_resolve)+1);
+
+        char* octets[4];
+        char* octet = strtok(dname, ".");
+        for (int i = 0; i < 4; i++) {
+            octets[i] = octet;
+            octet = strtok(NULL, ".");
+        }
+        char reversed_octets[16];
+        sprintf(reversed_octets, "%s.%s.%s.%s", octets[3], octets[2], octets[1], octets[0]);
+        char reverse_address[32];
+        sprintf(reverse_address, "%s.IN-ADDR.ARPA", reversed_octets); //.
         // Convert the resulting domain name to RFC format
-        dns_name_to_rfc_format(qname, (uchar*)domain_name_to_resolve);
+        dns_name_to_rfc_format(qname, (uchar*)reverse_address);
+        free(dname);
     }
     dns_qdata_t* qinfo = (dns_qdata_t*)&buf[sizeof(dns_header_t) + (strlen((const char*)qname) + 1)]; //fill it
  
     qinfo->qtype = htons(query_type); // type of the query , A , MX , CNAME , NS etc
     qinfo->qclass = htons(1); // its internet (lol)
-
-#if VERBOSE == 1 
+ 
     printf("Resolving %s" , domain_name_to_resolve);
 
     printf("\nSending Packet... ");
-#endif    
     size_t pkt_size = sizeof(dns_header_t) + (strlen((const char*)qname)+1) + sizeof(dns_qdata_t);
     if (sendto(sock_fd, (char*)buf, pkt_size, 0, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
         perror("sendto failed");
         return 1;
     }
-#if VERBOSE == 1     
-    printf("Done\n");
-#endif    
-
-    printf("Question section (%d)\n", N_QUESTIONS);
-    //printf("  %s., %s, %s\n", domain_name_to_resolve, ntohs(qinfo->qtype) == T_AAAA ? "AAAA" : "A", "IN");
-    printf("  %s., %s, %s\n", domain_name_to_resolve, dns_record_type_to_str(ntohs(qinfo->qtype)), "IN");
+    printf("Done");
 
     return 0;
 }
 
+const char* dns_record_type_to_str(uint16_t type)
+{
+    static char tbuf[16];
+    memset(tbuf, 0, 16);
 
+    switch (type)
+    {
+    case T_A:
+        memcpy(tbuf, "A", 1);
+        break;
+    case T_AAAA:
+        memcpy(tbuf, "AAAA", 4);
+        break;
+    case T_CNAME:
+        memcpy(tbuf, "CNAME", 5);
+        break;
+    case T_SOA:
+        memcpy(tbuf, "SOA", 3);
+        break;
+    case T_PTR:
+        memcpy(tbuf, "PTR", 3);
+        break;
+    default:
+        snprintf(tbuf, 15, "%d", type);
+        break;
+    }
+    return tbuf;
+}
 
 int dns_parse_answer(dns_answer_t* ans, uchar* reader, int* ans_real_len)
 {
@@ -263,7 +232,7 @@ int dns_parse_answer(dns_answer_t* ans, uchar* reader, int* ans_real_len)
 
             reader += stop;
 
-            printf("%s.\n", ans->rdata);
+            printf("%s\n", ans->rdata);
             break;            
         default:
             printf("\n");
@@ -334,10 +303,10 @@ int dns_receive_answers(int sock_fd, struct sockaddr_in addr, char* domain_name_
     dns_name_to_rfc_format(qname, (uchar*)domain_name_to_resolve);
     //qname = domain_name_to_resolve;
 
-    //dns_qdata_t* qinfo = (dns_qdata_t*)&buf[sizeof(dns_header_t) + (strlen((const char*)qname) + 1)]; //fill it
+    dns_qdata_t* qinfo = (dns_qdata_t*)&buf[sizeof(dns_header_t) + (strlen((const char*)qname) + 1)]; //fill it
 
-    // printf("Question section (%d)\n", N_QUESTIONS);
-    // printf("  %s., %s, %s\n", domain_name_to_resolve, ntohs(qinfo->qtype) == T_AAAA ? "AAAA" : "A", "IN");
+    printf("Question section (%d)\n", N_QUESTIONS);
+    printf("  %s., %s, %s\n", domain_name_to_resolve, ntohs(qinfo->qtype) == T_AAAA ? "AAAA" : "A", "IN");
 
     //move ahead of the dns header and the query field
     uchar* reader = &buf[sizeof(dns_header_t) + (strlen((const char*)qname)+1) + sizeof(dns_qdata_t)];
@@ -361,7 +330,7 @@ int dns_receive_answers(int sock_fd, struct sockaddr_in addr, char* domain_name_
             return 1;
         }
         reader += ans_real_len;
-        //dns_answer_free();
+        dns_answer_free();
     }
  
     // Read authorities
@@ -371,7 +340,7 @@ int dns_receive_answers(int sock_fd, struct sockaddr_in addr, char* domain_name_
             return 1;
         }
         reader += ans_real_len;
-        //dns_answer_free();
+        dns_answer_free();
     }
  
     // Read additional
@@ -381,68 +350,8 @@ int dns_receive_answers(int sock_fd, struct sockaddr_in addr, char* domain_name_
             return 1;
         }
         reader += ans_real_len;
-        //dns_answer_free();
+        dns_answer_free();
     }
 
     return 0;
-}
-
-
-void dns_domain_to_ip(const char* server_domain_name, const char* server_port, char* server_ip)
-{
-    struct addrinfo gai_hints; //ipv4, udp
-    memset(&gai_hints, 0, sizeof(struct addrinfo));
-
-    gai_hints.ai_flags    = AI_NUMERICSERV | AI_CANONNAME;  // Service name is a port number. Request canonical name of the server
-    gai_hints.ai_family   = AF_UNSPEC; 
-    gai_hints.ai_socktype = SOCK_DGRAM; // Only request UDP socket address //TODO: remove?
-    gai_hints.ai_protocol = IPPROTO_UDP; //TODO: remove?
-
-    printf("Resolving server domain name: %s... ", server_domain_name);
-
-    struct addrinfo* gai_ret = NULL;
-    int addr_err = 0;
-    if ((addr_err = getaddrinfo(server_domain_name, server_port, &gai_hints, &gai_ret)) != 0) {
-        fprintf(stderr, "(getaddrinfo) Failed to resolve server address: %s.\n", gai_strerror(addr_err));
-    }
-
-    printf("Done\n");
-    
-#if VERBOSE == 1
-    printf("Available addresses:\n");
-    char tmpbuf[INET6_ADDRSTRLEN];
-#endif
-    
-    struct addrinfo* ai_tmp = NULL;
-    bool ip4_found = false;
-    for (ai_tmp = gai_ret; ai_tmp != NULL; ai_tmp = ai_tmp->ai_next) {
-        if (ai_tmp->ai_family == AF_INET && !ip4_found) { // Skip IPv6 for now
-            ip4_found = true;
-            struct sockaddr_in* ip4 = (struct sockaddr_in*)ai_tmp->ai_addr;
-            inet_ntop(AF_INET, &ip4->sin_addr, server_ip, INET_ADDRSTRLEN);
-        }
-
-#if VERBOSE == 1
-        if (ai_tmp->ai_family == AF_INET) {
-            struct sockaddr_in* ip4 = (struct sockaddr_in*)ai_tmp->ai_addr;
-            inet_ntop(AF_INET, &ip4->sin_addr, tmpbuf, INET_ADDRSTRLEN);
-        } else if (ai_tmp->ai_family == AF_INET6) {
-            struct sockaddr_in6* ip6 = (struct sockaddr_in6*)ai_tmp->ai_addr;
-            inet_ntop(AF_INET6, &ip6->sin6_addr, tmpbuf, INET6_ADDRSTRLEN);
-        }
-        printf("\t%s\n", tmpbuf);
-#endif        
-    }
-
-    if (!ip4_found) {
-        ai_tmp = gai_ret;
-        struct sockaddr_in6* ip6 = (struct sockaddr_in6*)ai_tmp->ai_addr;
-        inet_ntop(AF_INET6, &ip6->sin6_addr, server_ip, INET6_ADDRSTRLEN);
-    }
-
-#if VERBOSE == 1    
-    printf("Proceeding with %s address: %s\n\n", (ip4_found ? "IPv4" : "IPv6"), server_ip);
-#endif    
-    
-    freeaddrinfo(gai_ret);
 }

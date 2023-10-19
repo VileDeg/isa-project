@@ -1,9 +1,6 @@
-/* 
- * @author Vadim Goncearenco (xgonce00)
- */
-
 #include "base.h"
 #include "args.h"
+#include "server.h"
 #include "dns_packet.h"
 
 int sock_fd = -1;
@@ -52,8 +49,7 @@ int main(int argc, char* argv[])
     }
 
     char server_ip[INET6_ADDRSTRLEN];
-    //dns_domain_to_ip((char*)args.server_name, args.port_str, server_ip);
-    dns_domain_to_ip((char*)args.server_name, "53", server_ip);
+    domain_name_to_ip((char*)args.server_name, args.port_str, server_ip);
 
     sock_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 

@@ -1,7 +1,3 @@
-/* 
- * @author Vadim Goncearenco (xgonce00)
- */
-
 #ifndef __BASE_H__
 #define __BASE_H__
 

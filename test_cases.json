@@ -1,0 +1,29 @@
+[
+    {
+        "server": "dns.google",
+        "address": "www.example.com",
+        "port": 53,
+        "recursive": true,
+        "inverse": false,
+        "aaaa": false
+    },
+    {
+        "server": "dns.google",
+        "address": "www.github.com",
+        "recursive": true,
+        "inverse": false,
+        "aaaa": false
+    },
+    {
+        "server": "dns.google",
+        "address": "www.github.com",
+        "recursive": true,
+        "inverse": false,
+        "aaaa": false
+    },
+    {
+        "recursive": true,
+        "inverse": true,
+        "aaaa": false
+    }
+]

@@ -1,7 +1,7 @@
 #include "base.h"
 #include "server.h"
 
-void server_resolve_address(const char* server_domain_name, const char* server_port, char* server_ip)
+void domain_name_to_ip(const char* server_domain_name, const char* server_port, char* server_ip)
 {
     struct addrinfo gai_hints; //ipv4, udp
     memset(&gai_hints, 0, sizeof(struct addrinfo));

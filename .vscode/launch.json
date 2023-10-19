@@ -10,6 +10,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/dns",
             "args": ["-r", "-x", "-s", "dns.google", "15.197.204.56"],
+            //"args": ["-r", "-x", "-s", "dns.google", "93.184.216.34"],
+            //"args": ["-r", "-x", "-s", "dns.google", "www.example.com"],
             //"args": ["-r", "-x", "-s", "dns.google", "www.github.com"],
             //"args": ["-r", "-s", "dns.google", "www.github.com"],
             "stopAtEntry": false,

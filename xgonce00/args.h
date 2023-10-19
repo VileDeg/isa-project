@@ -1,7 +1,3 @@
-/* 
- * @author Vadim Goncearenco (xgonce00)
- */
-
 #ifndef __ARGS_H__
 #define __ARGS_H__
 

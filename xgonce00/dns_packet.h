@@ -1,7 +1,3 @@
-/* 
- * @author Vadim Goncearenco (xgonce00)
- */
-
 #ifndef __DNS_PACKET_H__
 #define __DNS_PACKET_H__
 
@@ -59,8 +55,6 @@ typedef struct {
 
 
 void dns_answer_free();
-
-void dns_domain_to_ip(const char* server_domain_name, const char* server_port, char* server_ip);
 
 int dns_send_question(int sock_fd, struct sockaddr_in addr, char* domain_name_to_resolve, bool recursion_desired, uint16_t record_type);
 
