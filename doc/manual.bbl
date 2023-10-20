@@ -1,0 +1,116 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nty/global//global/global}
+    \entry{Brisco1995}{report}{}
+      \name{author}{1}{}{%
+        {{hash=4f0b863d3218146ff448b441eadcbd68}{%
+           family={Brisco},
+           familyi={B\bibinitperiod},
+           given={Thomas\bibnamedelima P.},
+           giveni={T\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+      }
+      \strng{namehash}{4f0b863d3218146ff448b441eadcbd68}
+      \strng{fullhash}{4f0b863d3218146ff448b441eadcbd68}
+      \strng{bibnamehash}{4f0b863d3218146ff448b441eadcbd68}
+      \strng{authorbibnamehash}{4f0b863d3218146ff448b441eadcbd68}
+      \strng{authornamehash}{4f0b863d3218146ff448b441eadcbd68}
+      \strng{authorfullhash}{4f0b863d3218146ff448b441eadcbd68}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{This RFC is meant to first chronicle a foray into the IETF DNS Working Group, discuss other possible alternatives to provide/simulate load balancing support for DNS, and to provide an ultimate, flexible solution for providing DNS support for balancing loads of many types. This memo provides information for the Internet community. This memo does not specify an Internet standard of any kind.}
+      \field{month}{4}
+      \field{number}{RFC 1794}
+      \field{title}{{DNS} {Support} for {Load} {Balancing}}
+      \field{type}{techreport}
+      \field{urlday}{20}
+      \field{urlmonth}{10}
+      \field{urlyear}{2023}
+      \field{year}{1995}
+      \field{urldateera}{ce}
+      \verb{doi}
+      \verb 10.17487/RFC1794
+      \endverb
+      \verb{file}
+      \verb :Brisco1995 - DNS Support for Load Balancing.pdf:PDF
+      \endverb
+      \verb{urlraw}
+      \verb https://datatracker.ietf.org/doc/rfc1794
+      \endverb
+      \verb{url}
+      \verb https://datatracker.ietf.org/doc/rfc1794
+      \endverb
+    \endentry
+    \entry{1987}{report}{}
+      \field{sortinit}{D}
+      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
+      \field{labeltitlesource}{title}
+      \field{abstract}{This RFC is the revised specification of the protocol and format used in the implementation of the Domain Name System. It obsoletes RFC-883. This memo documents the details of the domain name client - server communication.}
+      \field{month}{11}
+      \field{number}{RFC 1035}
+      \field{title}{Domain names - implementation and specification}
+      \field{type}{techreport}
+      \field{urlday}{20}
+      \field{urlmonth}{10}
+      \field{urlyear}{2023}
+      \field{year}{1987}
+      \field{urldateera}{ce}
+      \verb{doi}
+      \verb 10.17487/RFC1035
+      \endverb
+      \verb{file}
+      \verb Full Text PDF:https\://www.rfc-editor.org/rfc/pdfrfc/rfc1035.txt.pdf:application/pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://datatracker.ietf.org/doc/rfc1035
+      \endverb
+      \verb{url}
+      \verb https://datatracker.ietf.org/doc/rfc1035
+      \endverb
+    \endentry
+    \entry{2023}{misc}{}
+      \list{language}{1}{%
+        {en-US}%
+      }
+      \field{sortinit}{I}
+      \field{sortinithash}{8d291c51ee89b6cd86bf5379f0b151d8}
+      \field{labeltitlesource}{title}
+      \field{abstract}{IBM Documentation.}
+      \field{howpublished}{online}
+      \field{month}{3}
+      \field{title}{{IBM} {Documentation}}
+      \field{urlday}{20}
+      \field{urlmonth}{10}
+      \field{urlyear}{2023}
+      \field{year}{2023}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://www.ibm.com/docs/en/aix/7.1?topic=d-dig-command
+      \endverb
+      \verb{url}
+      \verb https://www.ibm.com/docs/en/aix/7.1?topic=d-dig-command
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

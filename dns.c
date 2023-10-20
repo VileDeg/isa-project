@@ -22,15 +22,12 @@ void signal_handler(int signal) {
     terminate(0);
 }
 
+void print_help() {
+    printf(HELP_MESSAGE);
+}
 
 int main(int argc, char* argv[]) 
 {
-    int n = 1;
-    // little endian if true
-    if(*(char *)&n == 1) {
-        printf("Is little endian\n");
-    }
-
     #ifdef DEBUG
         // Disable buffering
         setbuf(stdout, NULL);
@@ -47,8 +44,12 @@ int main(int argc, char* argv[])
     args.port_str[0] = '5';
     args.port_str[1] = '3';
 
-    if (parse_args(argc, argv, &args) != 0) {
+    int ret = parse_args(argc, argv, &args);
+    if (ret > 0) {
         terminate(1);
+    } else if (ret < 0) {
+        print_help();
+        terminate(0);
     }
 
     char server_ip[INET6_ADDRSTRLEN];

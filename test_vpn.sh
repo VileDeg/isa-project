@@ -1,1 +1,0 @@
-./dns -r -6 -s kazi.fit.vutbr.cz www.ietdf.org

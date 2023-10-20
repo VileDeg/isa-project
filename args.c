@@ -70,7 +70,9 @@ int parse_args(int argc, char** argv, args_t* outa)
                 if (!server_set) { // port name encountered before serv name
                     return 1;
                 }
-                
+                break;
+            case 'h':
+                return -1;
                 break;
             default:
                 return 1;

@@ -29,6 +29,11 @@
     {
         "recursive": true,
         "inverse": true,
+        "aaaa": false
+    },
+    {
+        "recursive": true,
+        "inverse": true,
         "aaaa": true,
         "should_fail" : true
     },

@@ -6,7 +6,6 @@
 
 #include "base.h"
 #include "dns_packet.h"
-#include "pkt_print.h"
 
 uchar buf[BUFFER_SIZE];
 

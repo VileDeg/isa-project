@@ -1,3 +1,7 @@
+"""
+@author Vadim Goncearenco (xgonce00)
+""" 
+
 import re
 import json
 import subprocess
@@ -26,6 +30,10 @@ DEFAULT_ADDRESS  = 'www.google.com'
 DEFAULT_IPv4     = '140.82.121.4' # github.com
 
 COMPARE_TTL = False # TTL will most likely be different so no point to compare
+IGNORE_IPV6_TESTS = False
+IGNORE_VPN_TESTS = False
+
+VPN_SERVERS = ["kazi.fit.vutbr.cz"]
 
 class DnsSection(Enum):
     QUESTION   = "Question section"
@@ -271,6 +279,9 @@ def run_test(case):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--debug", help="enable debug mode", action="store_true")
+    parser.add_argument("-i", "--ignore-ipv6", help="ignore ipv6 tests", action="store_true")
+    parser.add_argument("-v", "--ignore-vpn", help="ignore vpn tests", action="store_true")
+    parser.add_argument("input_file", help="input JSON file")
     args = parser.parse_args()
     
     if args.debug:
@@ -278,10 +289,34 @@ if __name__ == "__main__":
         DEBUG = True
     else:
         print("Debug mode disabled. To enable debug mode use '-d'")
-        DEBUG = True
+        DEBUG = False
 
-    with open('test_cases.json', 'r') as f:
-        test_cases = json.load(f)
+    if args.ignore_ipv6:
+        print("Ignoring ipv6 tests.")
+        IGNORE_IPV6_TESTS = True
+    else:
+        print("Not ignoring ipv6 tests. To ignore ipv6 tests use '-i'")
+        IGNORE_IPV6_TESTS = False
+
+    if args.ignore_vpn:
+        print("Ignoring vpn tests.")
+        IGNORE_VPN_TESTS = True
+    else:
+        print("Not ignoring vpn tests. To ignore vpn tests use '-v'")
+        IGNORE_VPN_TESTS = False
+
+    #with open('test_cases.json', 'r') as f:
+    with open(args.input_file, 'r') as f:
+        loaded_tests = json.load(f)
+
+        test_cases = []
+        for test in loaded_tests:
+            if IGNORE_IPV6_TESTS and test.get('aaaa', False):
+                continue
+            if IGNORE_VPN_TESTS and test.get('server', DEFAULT_SERVER) in VPN_SERVERS:
+                continue
+            test_cases.append(test)
+
         passed = 0
         for i, case in enumerate(test_cases):
             if run_test(case):

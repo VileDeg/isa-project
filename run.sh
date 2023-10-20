@@ -1,4 +1,0 @@
-NAME=dns
-
-make
-./$NAME
