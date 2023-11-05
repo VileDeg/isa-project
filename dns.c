@@ -62,12 +62,12 @@ int main(int argc, char* argv[])
     bool ip_type4 = true;
 
     // Attempt to parse the address as IPv4
-    if (inet_pton(AF_INET , args.server_name, &ipv4) == 1) {
+    if (inet_pton(AF_INET , (char*)args.server_name, &ipv4) == 1) {
         ip_type4 = true;
-        memcpy(server_ip, args.server_name, strlen(args.server_name) + 1);
-    } else if (inet_pton(AF_INET6, args.server_name, &ipv6) == 1) {
+        memcpy(server_ip, args.server_name, strlen((char*)args.server_name) + 1);
+    } else if (inet_pton(AF_INET6, (char*)args.server_name, &ipv6) == 1) {
         ip_type4 = false;
-        memcpy(server_ip, args.server_name, strlen(args.server_name) + 1);
+        memcpy(server_ip, args.server_name, strlen((char*)args.server_name) + 1);
     } else {
         // Convert server name to IP address using getaddrinfo()
         if (dns_domain_to_ip((char*)args.server_name, server_ip, &ip_type4) != 0) {
@@ -85,8 +85,11 @@ int main(int argc, char* argv[])
         addr.sin_port = htons(args.port);
         addr.sin_addr.s_addr = inet_addr(server_ip); // Convert dns server address to binary network format
 
-        memcpy(&server_addr, &addr, sizeof(struct sockaddr_in));
+        memcpy(&server_addr, &addr, sizeof(struct sockaddr));
     } else {
+        fprintf(stderr, "IPv6 DNS server address not supported.\n");
+        terminate(1);
+#if 0        
         // Fill in server address structure
         struct sockaddr_in6 addr;
 
@@ -95,6 +98,7 @@ int main(int argc, char* argv[])
         inet_pton(AF_INET6, server_ip, &addr.sin6_addr); // Convert dns server address to binary network format
 
         memcpy(&server_addr, &addr, sizeof(struct sockaddr_in6));
+#endif        
     }
 
     // Create socket
