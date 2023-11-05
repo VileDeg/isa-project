@@ -8,7 +8,7 @@
 uchar buf[BUFFER_SIZE];
 
 
-int dns_domain_to_ip(const char* server_domain_name, char* server_ip)
+int dns_domain_to_ip(const char* server_domain_name, char* server_ip, bool* ip_type4)
 {
     struct addrinfo gai_hints; //ipv4, udp
     memset(&gai_hints, 0, sizeof(struct addrinfo));
@@ -25,7 +25,7 @@ int dns_domain_to_ip(const char* server_domain_name, char* server_ip)
 
     struct addrinfo* gai_ret = NULL;
     int addr_err = 0;
-    if ((addr_err = getaddrinfo(server_domain_name, "53", &gai_hints, &gai_ret)) != 0) {
+    if ((addr_err = getaddrinfo(server_domain_name, "53", &gai_hints, &gai_ret)) != 0 || gai_ret == NULL) {
         fprintf(stderr, "(getaddrinfo) Failed to resolve server address: %s.\n", gai_strerror(addr_err));
         return 1;
     }
@@ -59,6 +59,8 @@ int dns_domain_to_ip(const char* server_domain_name, char* server_ip)
         printf("\t%s\n", tmpbuf);
 #endif        
     }
+
+    *ip_type4 = ip4_found;
 
     // If no IPv4 address was found, use IPv6
     if (!ip4_found) {
@@ -264,7 +266,7 @@ uchar* dns_read_name(uchar* reader, uchar* buffer, int* count)
 }
 
 
-int dns_send_question(int sock_fd, struct sockaddr_in server_addr, char* domain_or_ip, bool recursion_desired, uint16_t query_type)
+int dns_send_question(int sock_fd, struct sockaddr server_addr, char* domain_or_ip, bool recursion_desired, uint16_t query_type)
 {
     // Fill in the DNS header
     dns_header_t *dns = (dns_header_t*)&buf;
@@ -415,7 +417,7 @@ int dns_parse_answer(dns_answer_t* ans, uchar* reader, int* ans_real_len)
 }
 
 
-int dns_receive_answers(int sock_fd, struct sockaddr_in server_addr)
+int dns_receive_answers(int sock_fd, struct sockaddr server_addr)
 {
     // Receive the answer
     int addr_len = sizeof(server_addr);

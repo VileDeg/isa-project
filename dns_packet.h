@@ -60,12 +60,12 @@ typedef struct {
 
 
 // Convert domain name to IP address using getaddrinfo()
-int dns_domain_to_ip(const char* server_domain_name, char* server_ip);
+int dns_domain_to_ip(const char* server_domain_name, char* server_ip, bool* ip_type4);
 
 // Send DNS query
-int dns_send_question(int sock_fd, struct sockaddr_in addr, char* domain_name_to_resolve, bool recursion_desired, uint16_t record_type);
+int dns_send_question(int sock_fd, struct sockaddr addr, char* domain_name_to_resolve, bool recursion_desired, uint16_t record_type);
 
 // Receive all DNS answers
-int dns_receive_answers(int sock_fd, struct sockaddr_in addr);
+int dns_receive_answers(int sock_fd, struct sockaddr addr);
 
 #endif // !__DNS_PACKET_H__
