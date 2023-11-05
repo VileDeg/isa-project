@@ -29,11 +29,6 @@
     {
         "recursive": true,
         "inverse": true,
-        "aaaa": false
-    },
-    {
-        "recursive": true,
-        "inverse": true,
         "aaaa": true,
         "should_fail" : true
     },
@@ -59,20 +54,37 @@
         "address": "www.github.com",
         "recursive": true,
         "inverse": false,
-        "aaaa": false
+        "aaaa": false,
+        "vpn_required": true
     },
     {
         "server": "kazi.fit.vutbr.cz",
         "address": "www.example.com",
         "recursive": true,
         "inverse": false,
-        "aaaa": true
+        "aaaa": true,
+        "vpn_required": true
     },
     {
         "server": "kazi.fit.vutbr.cz",
         "address": "www.example.com",
         "recursive": false,
         "inverse": false,
-        "aaaa": true
+        "aaaa": true,
+        "vpn_required": true
+    },
+    {
+        "address": "2a00:1450:400d:80e::2004", 
+        "recursive": true,
+        "inverse": true,
+        "aaaa": false
+    },
+    {
+        "server": "kazi.fit.vutbr.cz",
+        "address": "2a00:1450:400d:80e::2004", 
+        "recursive": true,
+        "inverse": true,
+        "aaaa": false,
+        "vpn_required": true
     }
 ]
