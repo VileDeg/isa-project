@@ -33,7 +33,7 @@ int parse_args(int argc, char** argv, args_t* outa)
             case 'r': // -r
                 if (flags.r) {
                     fprintf(stderr, "Duplicated flag: -%c\n", flag);
-                    return 1; // Duplicated flag;
+                    return 1; // Duplicated flag
                 }
                 outa->recursion_desired = true;
                 flags.r = true;
@@ -41,7 +41,7 @@ int parse_args(int argc, char** argv, args_t* outa)
             case 'x': // -x
                 if (flags.x) {
                     fprintf(stderr, "Duplicated flag: -%c\n", flag);
-                    return 1; // Duplicated flag;
+                    return 1; // Duplicated flag
                 }
                 outa->query_type = T_PTR;
                 flags.x = true;
@@ -49,45 +49,44 @@ int parse_args(int argc, char** argv, args_t* outa)
             case '6': // -6
                 if (flags._6) {
                     fprintf(stderr, "Duplicated flag: -%c\n", flag);
-                    return 1; // Duplicated flag;
+                    return 1; // Duplicated flag
                 }
                 outa->query_type = T_AAAA;
                 flags._6 = true;
                 break;
-            case 's':
+            case 's': // -s
                 if (flags.s) {
                     fprintf(stderr, "Duplicated flag: -%c\n", flag);
-                    return 1; // Duplicated flag;
+                    return 1; // Duplicated flag
                 }
                 flags.s = true;
                 break;
-            case 'p':
+            case 'p': // -p
                 if (flags.p) {
                     fprintf(stderr, "Duplicated flag: -%c\n", flag);
-                    return 1; // Duplicated flag;
+                    return 1; // Duplicated flag
                 }
                 flags.p = true;
                 if (!server_set) { // port name encountered before serv name
                     return 1;
                 }
                 break;
-            case 'h':
+            case 'h': // -h
                 return -1;
                 break;
-            default:
+            default: // unknown flag
                 return 1;
             }
         } else {
-            if (flag == 's') {
+            if (flag == 's') { // If last flag was -s
                 if (!server_set) {
                     memcpy(outa->server_name, a, strlen(a));
                     server_set = true;
                 } else {
                     memcpy(outa->address_str, a, strlen(a));
-                    //outa->address_str[strlen(a)] = '\0';
                     address_set = true;
                 }
-            } else if (flag == 'p') { 
+            } else if (flag == 'p') { // If last flag was -p
                 outa->port = atoi(a);
                 if (errno == ERANGE || errno == EINVAL) {
                     fprintf(stderr, "Invalid port value.\n");
@@ -99,6 +98,7 @@ int parse_args(int argc, char** argv, args_t* outa)
                 }
                 memcpy(outa->port_str, a, strlen(a));
             } else {
+                fprintf(stderr, "Invalid argument: %s\n", a);
                 return 1;
             }
         }

@@ -8,6 +8,7 @@
 
 int sock_fd = -1;
 
+// Correctly terminates the program with the given exit code
 void terminate(int code) {
     if (sock_fd >= 0) {
         close(sock_fd);
@@ -37,6 +38,7 @@ int main(int argc, char* argv[])
     signal(SIGTERM, signal_handler);
     signal(SIGQUIT, signal_handler);
 
+    // Parse arguments
     args_t args;
     memset(&args, 0, sizeof(args_t));
     args.query_type = T_A;
@@ -52,10 +54,13 @@ int main(int argc, char* argv[])
         terminate(0);
     }
 
+    // Convert server name to IP address using getaddrinfo()
     char server_ip[INET6_ADDRSTRLEN];
-    //dns_domain_to_ip((char*)args.server_name, args.port_str, server_ip);
-    dns_domain_to_ip((char*)args.server_name, server_ip);
+    if (dns_domain_to_ip((char*)args.server_name, server_ip) != 0) {
+        terminate(1);
+    }
 
+    // Create socket
     sock_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
     if (sock_fd < 0) {
@@ -63,17 +68,20 @@ int main(int argc, char* argv[])
         terminate(1);
     }
 
+    // Fill in server address structure
     struct sockaddr_in addr;
 
     addr.sin_family = AF_INET;
     addr.sin_port = htons(args.port);
     addr.sin_addr.s_addr = inet_addr(server_ip); // Convert dns server address to binary network format
 
+    // Send DNS query
     if (dns_send_question(sock_fd, addr, args.address_str, args.recursion_desired, args.query_type) != 0) {
         terminate(1);
     }
 
-    if (dns_receive_answers(sock_fd, addr, args.address_str) != 0) {
+    // Receive all DNS answers
+    if (dns_receive_answers(sock_fd, addr) != 0) {
         terminate(1);
     }
 

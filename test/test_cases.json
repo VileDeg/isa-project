@@ -72,5 +72,19 @@
         "inverse": false,
         "aaaa": true,
         "vpn_required": true
+    },
+    {
+        "address": "2a00:1450:400d:80e::2004", 
+        "recursive": true,
+        "inverse": true,
+        "aaaa": false
+    },
+    {
+        "server": "kazi.fit.vutbr.cz",
+        "address": "2a00:1450:400d:80e::2004", 
+        "recursive": true,
+        "inverse": true,
+        "aaaa": false,
+        "vpn_required": true
     }
 ]

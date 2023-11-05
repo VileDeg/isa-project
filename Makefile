@@ -10,6 +10,9 @@ OBJS:=$(SRCS:c=o)
 
 HDRS=base.h args.h dns_packet.h
 
+TEST_DIR=test
+DOC_DIR=doc
+
 .phony: all $(EXE) clean test pack unpack
 
 all: $(EXE)
@@ -25,8 +28,8 @@ test: $(EXE)
 
 pack:
 	tar -cvf $(LOGIN).tar $(SRCS) $(HDRS) Makefile \
-	test.py test_cases.json \
-	README.md doc/manual.pdf 
+	$(TEST_DIR)/test.py $(TEST_DIR)/test_cases.json \
+	$(DOC_DIR)/README.md $(DOC_DIR)/manual.pdf 
 
 unpack:
 	tar -xvf $(LOGIN).tar --one-top-level

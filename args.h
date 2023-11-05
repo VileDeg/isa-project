@@ -8,17 +8,16 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define MAX_DOMAIN_NAME_LEN 255
-#define PORT_STR_LEN 5
-#define MAX_ADDR_LEN 65536
+#define MAX_DOMAIN_STR_LEN 254
+#define MAX_PORT_STR_LEN 6
 
 typedef struct {
     bool recursion_desired;
     uint16_t query_type;
-    unsigned char server_name[MAX_DOMAIN_NAME_LEN+1];
+    unsigned char server_name[MAX_DOMAIN_STR_LEN];
     uint16_t port;
-    char port_str[PORT_STR_LEN+1];
-    char address_str[MAX_ADDR_LEN];
+    char port_str[MAX_PORT_STR_LEN];
+    char address_str[MAX_DOMAIN_STR_LEN];
 } args_t;
 
 
