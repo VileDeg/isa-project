@@ -97,9 +97,6 @@ int parse_args(int argc, char** argv, args_t* outa)
                     return 1;
                 }
                 memcpy(outa->port_str, a, strlen(a));
-            } else {
-                fprintf(stderr, "Invalid argument: %s\n", a);
-                return 1;
             }
         }
     }

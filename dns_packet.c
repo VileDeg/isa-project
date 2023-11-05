@@ -181,7 +181,7 @@ int dns_reverse_ipv6(char* out_addr, const char* in_addr) {
     if (inet_pton(AF_INET6, in_addr, &ipv6) == 1) {
         // Expand the IPv6 address
         for (int i = 0; i < 8; i++) {
-            sprintf(expanded + i * 5, "%04x", ntohs(ipv6.__in6_u.__u6_addr16[i]));
+            sprintf(expanded + i * 5, "%04x", ntohs(((uint16_t*)&ipv6)[i]));
             if (i < 7) {
                 expanded[i * 5 + 4] = ':';
             }
@@ -298,16 +298,12 @@ int dns_send_question(int sock_fd, struct sockaddr_in server_addr, char* domain_
 
         // Attempt to parse the address as IPv4
         if (inet_pton(AF_INET, domain_or_ip, &ipv4) == 1) {
-            printf("IPv4 Address: %s\n", domain_or_ip);
-
             // Reverse the bytes in IP address and append .IN-ADDR.ARPA
             if (dns_reverse_ipv4(out_address, domain_or_ip) != 0) {
                 return 1;
             }
         // Attempt to parse the address as IPv6 
         } else if (inet_pton(AF_INET6, domain_or_ip, &ipv6) == 1) {
-            printf("IPv6 Address: %s\n", domain_or_ip);
-
             // Reverse the IPv6 address and append .IP6.ARPA
             if (dns_reverse_ipv6(out_address, domain_or_ip) != 0) {
                 return 1;

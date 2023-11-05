@@ -1,5 +1,6 @@
 CC=gcc
-DBGFLAGS=-g -DDEBUG
+# DBGFLAGS=-g -DDEBUG
+DBGFLAGS=-g
 CFLAGS=-Wall -std=c99 $(DBGFLAGS)
 
 EXE=dns
