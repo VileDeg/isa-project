@@ -266,7 +266,7 @@ uchar* dns_read_name(uchar* reader, uchar* buffer, int* count)
 }
 
 
-int dns_send_question(int sock_fd, struct sockaddr server_addr, char* domain_or_ip, bool recursion_desired, uint16_t query_type)
+int dns_send_question(int sock_fd, serv_addr_t serv, char* domain_or_ip, bool recursion_desired, uint16_t query_type)
 {
     // Fill in the DNS header
     dns_header_t *dns = (dns_header_t*)&buf;
@@ -330,9 +330,17 @@ int dns_send_question(int sock_fd, struct sockaddr server_addr, char* domain_or_
 
     printf("\nSending Packet... ");
 #endif    
+
     // Send the packet to the server
     size_t pkt_size = sizeof(dns_header_t) + (strlen((const char*)qname)+1) + sizeof(dns_qdata_t);
-    if (sendto(sock_fd, (char*)buf, pkt_size, 0, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+
+    struct sockaddr* server_addr = serv.ipv4 ? 
+        (struct sockaddr*)&(serv.addr_ip4) : (struct sockaddr*)&(serv.addr_ip6);
+    
+    socklen_t server_addr_len = serv.ipv4 ? 
+        sizeof(serv.addr_ip4) : sizeof(serv.addr_ip6);
+
+    if (sendto(sock_fd, (char*)buf, pkt_size, 0, server_addr, server_addr_len) < 0) {
         perror("sendto failed");
         return 1;
     }
@@ -417,18 +425,22 @@ int dns_parse_answer(dns_answer_t* ans, uchar* reader, int* ans_real_len)
 }
 
 
-int dns_receive_answers(int sock_fd, struct sockaddr server_addr)
+int dns_receive_answers(int sock_fd, serv_addr_t serv)
 {
-    // Receive the answer
-    int addr_len = sizeof(server_addr);
 #if VERBOSE == 1  
     printf("\nReceiving answer... ");
 #endif
 
-    if (recvfrom(sock_fd, (char*)buf, BUFFER_SIZE, 0, (struct sockaddr*)&server_addr, (socklen_t*)&addr_len) < 0) {
+    struct sockaddr* server_addr = serv.ipv4 ? 
+        (struct sockaddr*)&(serv.addr_ip4) : (struct sockaddr*)&(serv.addr_ip6);
+
+    socklen_t server_addr_len = serv.ipv4 ? sizeof(serv.addr_ip4) : sizeof(serv.addr_ip6);
+
+    if (recvfrom(sock_fd, (char*)buf, BUFFER_SIZE, 0, server_addr, &server_addr_len) < 0) {
         perror("recvfrom failed");
         return 1;
     }
+
 #if VERBOSE == 1      
     printf("Done\n\n");
 #endif    

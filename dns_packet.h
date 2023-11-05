@@ -59,13 +59,21 @@ typedef struct {
 } dns_question_t;
 
 
+
+typedef struct {
+    struct sockaddr_in  addr_ip4;
+    struct sockaddr_in6 addr_ip6;
+    bool ipv4;
+} serv_addr_t;
+
+
 // Convert domain name to IP address using getaddrinfo()
 int dns_domain_to_ip(const char* server_domain_name, char* server_ip, bool* ip_type4);
 
 // Send DNS query
-int dns_send_question(int sock_fd, struct sockaddr addr, char* domain_name_to_resolve, bool recursion_desired, uint16_t record_type);
+int dns_send_question(int sock_fd, serv_addr_t serv, char* domain_or_ip, bool recursion_desired, uint16_t query_type);
 
 // Receive all DNS answers
-int dns_receive_answers(int sock_fd, struct sockaddr addr);
+int dns_receive_answers(int sock_fd, serv_addr_t serv);
 
 #endif // !__DNS_PACKET_H__

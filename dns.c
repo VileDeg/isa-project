@@ -75,30 +75,24 @@ int main(int argc, char* argv[])
         }
     }
 
-    struct sockaddr server_addr;
+    serv_addr_t serv;
+    memset(&serv, 0, sizeof(serv_addr_t));
+
+    serv.ipv4 = ip_type4;
 
     if (ip_type4) {
-         // Fill in server address structure
-        struct sockaddr_in addr;
-
-        addr.sin_family = AF_INET;
-        addr.sin_port = htons(args.port);
-        addr.sin_addr.s_addr = inet_addr(server_ip); // Convert dns server address to binary network format
-
-        memcpy(&server_addr, &addr, sizeof(struct sockaddr));
+        serv.addr_ip4.sin_family = AF_INET;
+        serv.addr_ip4.sin_port = htons(args.port);
+         // Convert dns server address to binary network format
+        serv.addr_ip4.sin_addr.s_addr = inet_addr(server_ip);
     } else {
-        fprintf(stderr, "IPv6 DNS server address not supported.\n");
-        terminate(1);
-#if 0        
-        // Fill in server address structure
-        struct sockaddr_in6 addr;
-
-        addr.sin6_family = AF_INET6;
-        addr.sin6_port = htons(args.port);
-        inet_pton(AF_INET6, server_ip, &addr.sin6_addr); // Convert dns server address to binary network format
-
-        memcpy(&server_addr, &addr, sizeof(struct sockaddr_in6));
-#endif        
+        serv.addr_ip6.sin6_family = AF_INET6;
+        serv.addr_ip6.sin6_port = htons(args.port);
+         // Convert dns server address to binary network format
+        if (inet_pton(AF_INET6, server_ip, &serv.addr_ip6.sin6_addr) != 1) {
+            perror("Failed converting IPv6 address.");
+            terminate(1);
+        }
     }
 
     // Create socket
@@ -110,12 +104,12 @@ int main(int argc, char* argv[])
     }
 
     // Send DNS query
-    if (dns_send_question(sock_fd, server_addr, args.address_str, args.recursion_desired, args.query_type) != 0) {
+    if (dns_send_question(sock_fd, serv, args.address_str, args.recursion_desired, args.query_type) != 0) {
         terminate(1);
     }
 
     // Receive all DNS answers
-    if (dns_receive_answers(sock_fd, server_addr) != 0) {
+    if (dns_receive_answers(sock_fd, serv) != 0) {
         terminate(1);
     }
 
