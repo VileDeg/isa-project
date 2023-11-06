@@ -9,14 +9,14 @@
     },
     {
         "server": "dns.google",
-        "address": "www.github.com",
+        "address": "www.example.com",
         "recursive": true,
         "inverse": false,
         "aaaa": false
     },
     {
         "server": "dns.google",
-        "address": "www.github.com",
+        "address": "www.example.com",
         "recursive": true,
         "inverse": false,
         "aaaa": false
@@ -38,7 +38,7 @@
         "aaaa": false
     },
     {
-        "address": "www.github.com",
+        "address": "www.example.com",
         "recursive": true,
         "inverse": false,
         "aaaa": true
@@ -51,27 +51,24 @@
     },
     {
         "server": "kazi.fit.vutbr.cz",
-        "address": "www.github.com",
+        "address": "www.example.com",
         "recursive": true,
         "inverse": false,
-        "aaaa": false,
-        "vpn_required": true
+        "aaaa": false
     },
     {
         "server": "kazi.fit.vutbr.cz",
         "address": "www.example.com",
         "recursive": true,
         "inverse": false,
-        "aaaa": true,
-        "vpn_required": true
+        "aaaa": true
     },
     {
         "server": "kazi.fit.vutbr.cz",
         "address": "www.example.com",
         "recursive": false,
         "inverse": false,
-        "aaaa": true,
-        "vpn_required": true
+        "aaaa": true
     },
     {
         "address": "2a00:1450:400d:80e::2004", 
@@ -84,7 +81,14 @@
         "address": "2a00:1450:400d:80e::2004", 
         "recursive": true,
         "inverse": true,
+        "aaaa": false
+    },
+    {
+        "server": "2001:4860:4860::8844",
+        "address": "2a00:1450:400d:80e::2004", 
+        "recursive": true,
+        "inverse": true,
         "aaaa": false,
-        "vpn_required": true
+        "ip6_required": true
     }
 ]

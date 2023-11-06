@@ -8,7 +8,7 @@
 uchar buf[BUFFER_SIZE];
 
 
-int dns_domain_to_ip(const char* server_domain_name, char* server_ip, bool* ip_type4)
+int dns_domain_to_ip(const char* server_domain_name, serv_addr_t* serv)
 {
     struct addrinfo gai_hints; //ipv4, udp
     memset(&gai_hints, 0, sizeof(struct addrinfo));
@@ -45,7 +45,8 @@ int dns_domain_to_ip(const char* server_domain_name, char* server_ip, bool* ip_t
         if (ai_tmp->ai_family == AF_INET && !ip4_found) { // Skip IPv6 for now
             ip4_found = true;
             struct sockaddr_in* ip4 = (struct sockaddr_in*)ai_tmp->ai_addr;
-            inet_ntop(AF_INET, &ip4->sin_addr, server_ip, INET_ADDRSTRLEN);
+            serv->addr_ip4.sin_family = AF_INET;
+            serv->addr_ip4.sin_addr = ip4->sin_addr;
         }
 
 #if VERBOSE == 1
@@ -60,13 +61,15 @@ int dns_domain_to_ip(const char* server_domain_name, char* server_ip, bool* ip_t
 #endif        
     }
 
-    *ip_type4 = ip4_found;
+    //*ip_type4 = ip4_found;
+    serv->ipv4 = ip4_found;
 
     // If no IPv4 address was found, use IPv6
     if (!ip4_found) {
         ai_tmp = gai_ret;
         struct sockaddr_in6* ip6 = (struct sockaddr_in6*)ai_tmp->ai_addr;
-        inet_ntop(AF_INET6, &ip6->sin6_addr, server_ip, INET6_ADDRSTRLEN);
+        serv->addr_ip6.sin6_family = AF_INET6;
+        serv->addr_ip6.sin6_addr = ip6->sin6_addr;
     }
 
 #if VERBOSE == 1    
@@ -400,7 +403,11 @@ int dns_parse_answer(dns_answer_t* ans, uchar* reader, int* ans_real_len)
 
             reader += rdata_len;
             
-            inet_ntop(type == T_A ? AF_INET : AF_INET6, ans->rdata, ip_buf, len);
+            if (inet_ntop(type == T_A ? AF_INET : AF_INET6, ans->rdata, ip_buf, len) == NULL) {
+                free(ans->rdata);
+                perror("inet_ntop: invalid address in RDATA (A/AAAA)");
+                return 1;
+            }
 
             printf("%s\n", ip_buf);
             break;

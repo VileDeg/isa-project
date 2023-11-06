@@ -6,6 +6,7 @@ import re
 import json
 import subprocess
 import argparse
+import time
 
 from enum import Enum
 
@@ -22,12 +23,15 @@ class bcolors:
 
 DEBUG = True
 
+SUBPROCESS_TIMEOUT = 15
+RUN_TEST_SLEEP_T = 0.5
+
 DNS_PROGRAM_NAME = './dns'
 DIG_PROGRAM_NAME = 'dig'
 
 DEFAULT_SERVER   = 'dns.google'
 DEFAULT_ADDRESS  = 'www.google.com'
-DEFAULT_IPv4     = '140.82.121.4' # github.com
+DEFAULT_IPv4     = '142.250.180.196' # www.google.com
 
 COMPARE_TTL = False # TTL will most likely be different so no point to compare
 IGNORE_IPV6_TESTS = False
@@ -239,21 +243,23 @@ def run_test(case):
             dns_command.append(str(case['port']))
     except KeyError:
         print(f"{bcolors.FAIL}Error: Json is missing a required field.{bcolors.ENDC}")
-        exit(1)
+        return False
 
     # Run the command and capture the output
-    dig_result = subprocess.run(dig_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    dig_result = subprocess.run(dig_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
+                                universal_newlines=True, timeout=SUBPROCESS_TIMEOUT)
 
     if dig_result.returncode == 0:
         dig_output = dig_result.stdout
     else:
         dig_output = dig_result.stderr
-        print(f"{bcolors.FAIL}Error: Invalid input. The dig program failed with an error.{bcolors.ENDC}")
+        print(f"{bcolors.FAIL}Error: dig program failed with an error.{bcolors.ENDC}")
         print(f"{bcolors.FAIL}stderr: {dig_output}{bcolors.ENDC}")
-        exit(1)
+        return False
 
     # Run the command and capture the output and exit code
-    dns_result = subprocess.run(dns_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    dns_result = subprocess.run(dns_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
+                                universal_newlines=True, timeout=SUBPROCESS_TIMEOUT)
 
     # Check the exit code
     if dns_result.returncode == 0:
@@ -263,9 +269,9 @@ def run_test(case):
             return True
         else:
             dns_output = dns_result.stderr
-            print(f"{bcolors.FAIL}Error: The {DNS_PROGRAM_NAME} program failed with an error.{bcolors.ENDC}")
+            print(f"{bcolors.FAIL}Error: {DNS_PROGRAM_NAME} program failed with an error.{bcolors.ENDC}")
             print(f"{bcolors.FAIL}stderr: {dns_output}{bcolors.ENDC}")
-            exit(1)
+            return False
 
     if DEBUG:
         print(dig_output)
@@ -279,7 +285,7 @@ def run_test(case):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--debug", help="enable debug mode", action="store_true")
-    parser.add_argument("-i", "--ignore-ipv6", help="ignore ipv6 tests", action="store_true")
+    parser.add_argument("-6", "--ignore-ipv6", help="ignore ipv6 tests", action="store_true")
     parser.add_argument("-v", "--ignore-vpn", help="ignore vpn tests", action="store_true")
     parser.add_argument("input_file", help="input JSON file")
     args = parser.parse_args()
@@ -295,7 +301,7 @@ if __name__ == "__main__":
         print("Ignoring ipv6 tests.")
         IGNORE_IPV6_TESTS = True
     else:
-        print("Not ignoring ipv6 tests. To ignore ipv6 tests use '-i'")
+        print("Not ignoring ipv6 tests. To ignore ipv6 tests use '-6'")
         IGNORE_IPV6_TESTS = False
 
     if args.ignore_vpn:
@@ -311,7 +317,7 @@ if __name__ == "__main__":
 
         test_cases = []
         for test in loaded_tests:
-            if IGNORE_IPV6_TESTS and test.get('aaaa', False):
+            if IGNORE_IPV6_TESTS and test.get('ip6_required', False):
                 continue
             if IGNORE_VPN_TESTS and test.get('server', DEFAULT_SERVER) in VPN_SERVERS:
                 continue
@@ -324,8 +330,12 @@ if __name__ == "__main__":
                 print(f"{bcolors.OKGREEN}TEST PASSED ({i+1}/{len(test_cases)}).{bcolors.ENDC}")
             else:
                 print(f"{bcolors.FAIL}TEST FAILED ({i+1}/{len(test_cases)}).{bcolors.ENDC}")
+            # Need to wait for some time to avoid blocking the server or smth like that.
+            # subprocess.run freezes otherwise
+            time.sleep(RUN_TEST_SLEEP_T)
         print(f"--------------------------------------------------------------------")
-        print(f"{bcolors.OKGREEN}PASSED: {passed}/{len(test_cases)}.{bcolors.ENDC}")
+        if (passed > 0):
+            print(f"{bcolors.OKGREEN}PASSED: {passed}/{len(test_cases)}.{bcolors.ENDC}")
         if passed != len(test_cases):
             print(f"{bcolors.FAIL}FAILED: {len(test_cases)-passed}/{len(test_cases)}.{bcolors.ENDC}")
         

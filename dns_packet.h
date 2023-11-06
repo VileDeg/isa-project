@@ -68,7 +68,7 @@ typedef struct {
 
 
 // Convert domain name to IP address using getaddrinfo()
-int dns_domain_to_ip(const char* server_domain_name, char* server_ip, bool* ip_type4);
+int dns_domain_to_ip(const char* server_domain_name, serv_addr_t* serv);
 
 // Send DNS query
 int dns_send_question(int sock_fd, serv_addr_t serv, char* domain_or_ip, bool recursion_desired, uint16_t query_type);

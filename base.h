@@ -21,6 +21,7 @@
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h> // for timeval
 #include <netdb.h>
 
 #ifdef DEBUG
@@ -62,14 +63,14 @@ typedef unsigned char uchar;
             Recursive query. If the DNS server does not have the answer, it will recursively query other DNS servers.\n\
         \n\
         -x\n\
-            Reverse query. The address is interpreted as an IPv4 address\n\
-            and the PTR record is queried. IPv6 addresses are not supported.\n\
+            Reverse DNS lookup. The address is interpreted as an IPv4/IPv6 address\n\
+            and a PTR query is sent.\n\
         \n\
         -6\n\
-            Force IPv6. The query is sent to the DNS server using IPv6.\n\
+            Send AAAA query to receive IPv6 address.\n\
         \n\
         -s server\n\
-            DNS server to query.\n\
+            DNS server domain name or IPv4/IPv6 address to send a query to.\n\
         \n\
         -p port\n\
             Port to use when querying the DNS server. Default is 53.\n\
@@ -78,6 +79,6 @@ typedef unsigned char uchar;
             Print help and exit.\n\
         \n\
         domain|address\n\
-            Domain name to query or IPv4 address to reverse query.\n"
+            Domain name to query or IPv4/IPv6 address to reverse query.\n"
 
 #endif // !__BASE_H__
