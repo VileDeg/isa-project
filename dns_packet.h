@@ -6,22 +6,22 @@
 #define __DNS_PACKET_H__
 
 // The following data structures are defined by RFC 1035.
-// But this definition is also inspired by the following gist:
-// https://gist.github.com/fffaraz/9d9170b57791c28ccda9255b48315168 (no license specified)
+// The exact definition is partially inspired by:
+// https://www.binarytides.com/dns-query-code-in-c-with-linux-sockets/
 typedef struct {
     uint16_t id;
  
-    uint8_t  rd :1; // Recursion desired
-    uint8_t  tc :1; // Truncated message
-    uint8_t  aa :1; // Authoritive answer
-    uint8_t  opcode :4; // Purpose of message
-    uint8_t  qr :1; // Query/response flag
+    uint8_t  rd : 1; // Recursion desired
+    uint8_t  tc : 1; // Truncated message
+    uint8_t  aa : 1; // Authoritive answer
+    uint8_t  opcode : 4; // Purpose of message
+    uint8_t  qr : 1; // Query/response flag
 
-    uint8_t  rcode :4; // Response code
-    uint8_t  cd :1; // Checking disabled
-    uint8_t  ad :1; // Authenticated data
-    uint8_t  z :1; // Zero (reserved)
-    uint8_t  ra :1; // Recursion available
+    uint8_t  rcode : 4; // Response code
+    uint8_t  cd : 1; // Checking disabled
+    uint8_t  ad : 1; // Authenticated data
+    uint8_t  z : 1; // Zero (reserved)
+    uint8_t  ra : 1; // Recursion available
  
     uint16_t q_count; // Number of question entries
     uint16_t ans_count; // Number of answer entries
@@ -36,15 +36,15 @@ typedef struct {
 } dns_qdata_t;
  
 // Constant sized fields of the resource record structure
-#pragma pack(push, 1)
+#pragma pack(push, 2) // Pack structure to 2 byte alignment
 typedef struct {
     uint16_t type;
     uint16_t class;
     uint32_t ttl;
     uint16_t data_len;
 } dns_ansdata_t;
-#pragma pack(pop)
- 
+#pragma pack(pop) // End of packed structure
+
 // Pointers to resource record contents
 typedef struct {
     uchar *name;

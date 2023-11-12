@@ -33,7 +33,8 @@ test: $(EXE)
 	python3 $(TEST_DIR)/test.py $(TEST_DIR)/test_cases.json
 
 unpack:
-	tar -xvf $(LOGIN).tar --one-top-level
+	mkdir $(LOGIN)
+	tar -xvf $(LOGIN).tar -C $(LOGIN)
 
 clean:
 	rm -rf $(EXE) $(OBJS) $(LOGIN).tar $(LOGIN)

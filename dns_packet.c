@@ -214,15 +214,19 @@ int dns_reverse_ipv6(char* out_addr, const char* in_addr) {
 
 
 
-uchar* dns_read_name(uchar* reader, uchar* buffer, int* count)
+uchar* dns_read_name(uchar* reader, uchar* buffer, int* name_len)
 {
-    unsigned int p = 0, jumped = 0, offset;
+    // The logic of the function implementation is inspired by: 
+    // https://www.binarytides.com/dns-query-code-in-c-with-linux-sockets/
     
     uchar *name = (uchar*)malloc(256);
-    name[0] = '\0';
+    memset(name, 0, 256);
  
-    *count = 1;
+    *name_len = 1;
  
+    bool jumped = false;
+    unsigned int offset = 0;
+    unsigned int p = 0;
     // Read the names in e.g. 3www6github3com format
     while (*reader != '\0') {
         uchar msb = *reader;
@@ -230,33 +234,33 @@ uchar* dns_read_name(uchar* reader, uchar* buffer, int* count)
 
         // If msb is 11XX XXXX then we have a pointer to another location
         if (msb >= 192) { // 192 = 1100 0000 
-            offset = msb * 256 + lsb - 49152; // 49152 = 1100 0000  0000 0000
+            offset = msb * 256 - 49152 + lsb; // 49152 = 1100 0000  0000 0000
             reader = buffer + offset - 1;
-            jumped = 1; // We have jumped to another location so counting wont go up!
+            jumped = true; // We have jumped to another location so name_len won't be incremented
         } else {
             name[p] = *reader;
             ++p;
         }
  
-        reader = reader + 1;
+        reader += 1;
  
-        if (jumped == 0) {
-            *count += 1; // If we havent jumped to another location then we can count up
+        if (!jumped) {
+            *name_len += 1;
         }
     }
  
-    name[p] = '\0'; // String complete
-    if (jumped == 1) {
-        *count += 1; // Number of steps we actually moved forward in the packet
+    name[p] = '\0';
+    if (jumped) {
+        *name_len += 1; // Number of steps moved forward in the packet
     }
  
     // Now convert e.g. 3www6github3com to www.github.com
     int i = 0;
-    for (i = 0; i < (int)strlen((const char*)name); i++) {
+    for (; i < (int)strlen((const char*)name); ++i) {
         p = name[i];
-        for (int j = 0; j < (int)p; j++) {
+        for (int j = 0; j < (int)p; ++j) {
             name[i] = name[i+1];
-            i = i + 1;
+            ++i;
         }
         name[i] = '.';
     }
@@ -361,10 +365,10 @@ int dns_parse_answer(dns_answer_t* ans, uchar* reader, int* ans_real_len)
 {
     uchar* reader_ini = reader;
 
-    int stop = 0;
-    ans->name = dns_read_name(reader, buf, &stop);
+    int name_len = 0;
+    ans->name = dns_read_name(reader, buf, &name_len);
 
-    reader += stop;
+    reader += name_len;
 
     ans->resource = (dns_ansdata_t*)(reader);
     reader += sizeof(dns_ansdata_t);
@@ -394,7 +398,7 @@ int dns_parse_answer(dns_answer_t* ans, uchar* reader, int* ans_real_len)
         return 1;
     }
 
-    stop = 0;
+    name_len = 0;
     switch (type) {
         case T_A:
         case T_AAAA:
@@ -413,9 +417,9 @@ int dns_parse_answer(dns_answer_t* ans, uchar* reader, int* ans_real_len)
             break;
         case T_NS: case T_MX: case T_SOA:
         case T_CNAME: case T_PTR:
-            ans->rdata = dns_read_name(reader, buf, &stop);
+            ans->rdata = dns_read_name(reader, buf, &name_len);
 
-            reader += stop;
+            reader += name_len;
 
             printf("%s.\n", ans->rdata);  
             break;            
