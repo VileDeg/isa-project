@@ -218,6 +218,7 @@ uchar* dns_read_name(uchar* reader, uchar* buffer, int* name_len)
 {
     // The logic of the function implementation is inspired by: 
     // https://www.binarytides.com/dns-query-code-in-c-with-linux-sockets/
+    // (License not specified)
     
     uchar *name = (uchar*)malloc(256);
     memset(name, 0, 256);

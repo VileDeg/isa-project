@@ -23,7 +23,7 @@
     NETWORK APPLICATIONS AND NETWORK ADMINISTRATION\\\LARGE 
     Semester project\\\Huge
     \Huge DNS resolver\\
-    \vspace{\stretch{0.618}}
+    \vspace{\stretch{0.618}} 
 \end{center}
 {\Large \today \hfill Vadim Goncearenco (xgonce00@stud.fit.vutbr.cz)}
 \newpage
@@ -43,52 +43,41 @@
 % titulní stranu, obsah, logické strukturování textu včetně číslování kapitol, 
 % přehled nastudovaných informací z literatury, popis zajímavějších pasáží implementace, 
 % použití vytvořených programů a literatura.
-% Pro dokumentaci je možné použít upravenou šablonu pro bakalářské práce.
+% Pro dokumentaci je možné použít upravenou šablonu pro bakalářské práce. 
 
 \section{Theory}
     \subsection{Domain Name System}
-        DNS (Domain Name System) is a hierarchical naming system that maps domain names to IP addresses.
-        It is used to translate human-readable domain names, such as \emph{www.example.com}, into IP addresses, such as \emph{192.0.2.1}, 
-        which are used to identify and locate computer services and devices on the internet.\cite{1987}
+        Domain Name System (DNS for short) is a network system that maps domain names to IP addresses.
+        It is used to translate domain names (e.g. www.google.com), into IP addresses, 
+        which are used to identify devices on the internet.
 
-        A DNS resolver is a program that queries DNS servers to resolve domain names into IP addresses.
-        When a user enters a domain name into a web browser, the browser sends a DNS query to a DNS resolver, 
-        which then sends a query to a DNS server to obtain the IP address associated with the domain name.
+        This project implements a simple DNS resolver, which is a client that sends DNS queries to DNS servers and parses the responses.
+        DNS queries are used to get IP address of a domain name (A or AAAA record), a domain name of an IP address (PTR record), mail server information (MX record), and etc.
+        There are multiple types records that are used for different purposes.
 
-        % The DNS resolver program typically uses the following steps to resolve a domain name:
-        % \begin{itemize}
-        %     \item The resolver sends a query to a DNS server, asking for the IP address associated with the domain name.
-        %     \item If the DNS server has the IP address in its cache, it returns the IP address to the resolver.
-        %     \item If the DNS server does not have the IP address in its cache, it sends a query to another DNS server higher up in the hierarchy.
-        %     \item This process continues until the IP address is found, or until the query reaches the root DNS server, 
-        %         which returns an error if the domain name is not valid.
-        % \end{itemize} 
-
-
-        DNS queries are used to obtain information about domain names, such as IP addresses, mail server information, and other resource records.
-        A DNS query consists of a header and a question section, which contains the domain name being queried and the type of information being requested.
+        A DNS query consists of a header and a question section.
 
         When a DNS query is sent, DNS resolver first checks the cache on a local device to see if it has the requested information.
         If the information is not in the cache, the resolver sends the query to a DNS server.
-
         The DNS server then checks its cache to see if it has the requested information.
         If the information is not in the cache, there are two possibilities how the DNS server can act depending on the type of query.
 
-        There are two types of DNS queries: recursive and iterative.
+        The two types of DNS queries are: recursive and iterative.
         \begin{itemize}
-            \item In a recursive query, the DNS server is responsible for obtaining the requested information and returning it to the client. 
+            \item In a recursive query, the DNS server is responsible for obtaining the requested information and returning it to the resolver. 
                 Which means that the DNS server communicates with other DNS servers, 
-                if necessary, to fully resolve the domain name. Once the information is obtained, 
-                the DNS server returns the final result to the client.
+                to fully resolve the domain name, if it doesn't have the requested information in its cache.
+                Once the information is obtained, the DNS server returns the final result to the client.
         
             \item In an iterative query, the DNS server returns the best information it has available at the time of the query. 
                 The DNS server may provide referrals to other DNS servers that might have more specific information about the domain. 
                 The client is responsible for sending additional queries to these referred DNS servers if needed to continue the resolution process. 
         \end{itemize} 
-        
 
-        DNS queries can also be performed over UDP or TCP.
-        UDP is used for small queries, while TCP is used for larger queries that require more data to be transmitted or for example in case of DNSSEC.
+        A DNS server sends back a DNS response.
+        Depending on the type of record the query was asking for, the DNS response may contain different information.
+        For example, if the query was asking for an A record, the response will contain the IPv4 address of the domain name.
+        If the query was asking for a PTR record, the response will contain the domain name of the IP address provided in the query.
 
         This section was partially adopted from \texttt{RFC 1035} \cite{1987}.
 
@@ -118,7 +107,7 @@
             \item \texttt{README.md} - Application usage.
             \item \texttt{test/test.py} - Python script for running the tests.
             \item \texttt{test/test\_cases.json} - Test cases for the \texttt{test.py} script.
-            \item \texttt{doc/manual.pdf} - This document.
+            \item \texttt{manual.pdf} - This document.
         \end{itemize}
 
 \section{Program usage}

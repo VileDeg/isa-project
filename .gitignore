@@ -60,3 +60,18 @@ caps/
 ./*.tar
 
 dns
+xgonce00/
+
+*.bib*
+*.bbl
+*.bcf
+*.fdb*
+*.fls*
+*.run*
+*.synctex*
+*.blg
+*.aux
+*.log
+*.out
+*.toc
+

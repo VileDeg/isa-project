@@ -6,8 +6,9 @@
 #define __DNS_PACKET_H__
 
 // The following data structures are defined by RFC 1035.
-// The exact definition is partially inspired by:
+// The definition is partially inspired by:
 // https://www.binarytides.com/dns-query-code-in-c-with-linux-sockets/
+// (License not specified)
 typedef struct {
     uint16_t id;
  

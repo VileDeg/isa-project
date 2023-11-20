@@ -107,7 +107,7 @@ CREATION DATE
 * [test/test_cases.json](test_cases.json) - JSON file with test cases
 * [Makefile](Makefile) - Makefile
 * [README.md](README.md) - This file
-* [doc/manual.pdf](manual.pdf) - Documentation
+* [manual.pdf](manual.pdf) - Documentation
 ## Compilation
 ```
 make

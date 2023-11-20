@@ -12,7 +12,7 @@ OBJS:=$(SRCS:c=o)
 HDRS=base.h args.h dns_packet.h
 
 TEST_DIR=test
-DOC_DIR=doc
+DOC_DIR=.
 
 .PHONY: all clean test pack unpack
 
